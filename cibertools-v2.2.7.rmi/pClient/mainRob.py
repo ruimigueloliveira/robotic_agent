@@ -72,7 +72,7 @@ class MyRob(CRobLinkAngs):
         print("   left: ", self.measures.irSensor[left_id])
         print("   ight: ", self.measures.irSensor[right_id])
 
-        if self.measures.irSensor[center_id] > 3\
+        if self.measures.irSensor[center_id] > 2.5\
             or self.measures.irSensor[left_id]   > 5\
             or self.measures.irSensor[right_id]  > 5\
             or self.measures.irSensor[back_id]   > 5:
@@ -81,15 +81,15 @@ class MyRob(CRobLinkAngs):
 
             if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
                 # print('Rotate right')
-                self.driveMotors(0.1,-0.1)
+                self.driveMotors(0.2,-0.2)
             elif self.measures.irSensor[left_id] < self.measures.irSensor[right_id]:
                 # print('Rotate left')
-                self.driveMotors(-0.1,0.1)
+                self.driveMotors(-0.2,0.2)
             else:
                 print("")
 
 
-        elif self.measures.irSensor[center_id] > 2\
+        elif self.measures.irSensor[center_id] > 1\
             or self.measures.irSensor[left_id]   > 3\
             or self.measures.irSensor[right_id]  > 3\
             or self.measures.irSensor[back_id]   > 3:
@@ -98,15 +98,15 @@ class MyRob(CRobLinkAngs):
 
             if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
                 # print('Rotate right')
-                self.driveMotors(0.1,-0.01)
+                self.driveMotors(0.2,-0.11)
             elif self.measures.irSensor[left_id] < self.measures.irSensor[right_id]:
                 # print('Rotate left')
-                self.driveMotors(-0.01,0.1)
+                self.driveMotors(-0.11,0.2)
             else:
                 print("")
 
 
-        elif self.measures.irSensor[center_id] > 1\
+        elif self.measures.irSensor[center_id] > 0.5\
             or self.measures.irSensor[left_id]   > 2.4\
             or self.measures.irSensor[right_id]  > 2.4\
             or self.measures.irSensor[back_id]   > 2.4:
@@ -115,14 +115,14 @@ class MyRob(CRobLinkAngs):
 
             if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
                 # print('Rotate right')
-                self.driveMotors(0.1,0.01)
+                self.driveMotors(0.2,0.11)
             elif self.measures.irSensor[left_id] < self.measures.irSensor[right_id]:
                 # print('Rotate left')
-                self.driveMotors(0.01,0.1)
+                self.driveMotors(0.11,0.2)
             else:
                 print("")
 
-        elif self.measures.irSensor[left_id]   > 1\
+        elif self.measures.irSensor[left_id]   > 0.5\
             or self.measures.irSensor[right_id]  > 1\
             or self.measures.irSensor[back_id]   > 1:
 
@@ -131,12 +131,12 @@ class MyRob(CRobLinkAngs):
 
             if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
                 # print('Rotate right')
-                self.driveMotors(0.1,0.099)
+                self.driveMotors(0.2,0.199)
             elif self.measures.irSensor[left_id] < self.measures.irSensor[right_id]:
                 # print('Rotate left')
-                self.driveMotors(0.099,0.1)
+                self.driveMotors(0.199,0.2)
             else:
-                self.driveMotors(0.15,0.15)
+                self.driveMotors(0.25,0.25)
 
 
 
