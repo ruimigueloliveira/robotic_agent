@@ -81,10 +81,10 @@ class MyRob(CRobLinkAngs):
 
             if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
                 # print('Rotate right')
-                self.driveMotors(0.2,-0.2)
+                self.driveMotors(0.15,-0.15)
             elif self.measures.irSensor[left_id] < self.measures.irSensor[right_id]:
                 # print('Rotate left')
-                self.driveMotors(-0.2,0.2)
+                self.driveMotors(-0.15,0.15)
             else:
                 print("")
 
@@ -98,10 +98,10 @@ class MyRob(CRobLinkAngs):
 
             if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
                 # print('Rotate right')
-                self.driveMotors(0.2,-0.11)
+                self.driveMotors(0.15,-0.11)
             elif self.measures.irSensor[left_id] < self.measures.irSensor[right_id]:
                 # print('Rotate left')
-                self.driveMotors(-0.11,0.2)
+                self.driveMotors(-0.11,0.15)
             else:
                 print("")
 
@@ -115,10 +115,10 @@ class MyRob(CRobLinkAngs):
 
             if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
                 # print('Rotate right')
-                self.driveMotors(0.2,0.11)
+                self.driveMotors(0.15,0.11)
             elif self.measures.irSensor[left_id] < self.measures.irSensor[right_id]:
                 # print('Rotate left')
-                self.driveMotors(0.11,0.2)
+                self.driveMotors(0.11,0.15)
             else:
                 print("")
 
@@ -131,12 +131,12 @@ class MyRob(CRobLinkAngs):
 
             if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
                 # print('Rotate right')
-                self.driveMotors(0.2,0.199)
+                self.driveMotors(0.15,0.099)
             elif self.measures.irSensor[left_id] < self.measures.irSensor[right_id]:
                 # print('Rotate left')
-                self.driveMotors(0.199,0.2)
+                self.driveMotors(0.099,0.15)
             else:
-                self.driveMotors(0.25,0.25)
+                self.driveMotors(0.15,0.15)
 
 
 
