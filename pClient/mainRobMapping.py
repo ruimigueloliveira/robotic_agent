@@ -7,7 +7,11 @@ import xml.etree.ElementTree as ET
 CELLROWS=7
 CELLCOLS=14
 
+
 class MyRob(CRobLinkAngs):
+    flag = 0
+    lap = 0
+    
     def __init__(self, rob_name, rob_id, angles, host):
         CRobLinkAngs.__init__(self, rob_name, rob_id, angles, host)
 
@@ -47,7 +51,7 @@ class MyRob(CRobLinkAngs):
                     state='wait'
                 if self.measures.ground==0:
                     self.setVisitingLed(True);
-                self.control()
+                self.mapping()
             elif state=='wait':
                 self.setReturningLed(True)
                 if self.measures.visitingLed==True:
@@ -60,57 +64,13 @@ class MyRob(CRobLinkAngs):
                     self.setVisitingLed(False)
                 if self.measures.returningLed==True:
                     self.setReturningLed(False)
-                self.control()
+                self.mapping()
             
-    def control(self):
-        center_id = 0
-        left_id = 1
-        right_id = 2
-        back_id = 3
+    def mapping(self):
+        print("x: ", self.measures.x)
+        print("y: ", self.measures.x)
+        print("dir: ", self.measures.dir)
 
-        # print("   front: ",  self.measures.irSensor[center_id])
-        # print("   left: ", self.measures.irSensor[left_id])
-        # print("   right: ", self.measures.irSensor[right_id])
-        # print("   back: ", self.measures.irSensor[back_id])
-
-        if self.measures.irSensor[center_id] > 2.5\
-            or self.measures.irSensor[left_id]   > 5\
-            or self.measures.irSensor[right_id]  > 5\
-            or self.measures.irSensor[back_id]   > 5:
-
-            print("Alto Perigo")
-
-            if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
-                self.driveMotors(0.15,-0.14)
-            else:
-                self.driveMotors(-0.14,0.15)
-
-        elif self.measures.irSensor[center_id] > 1.2\
-            or self.measures.irSensor[left_id]   > 2.8\
-            or self.measures.irSensor[right_id]  > 2.8\
-            or self.measures.irSensor[back_id]   > 2.8:
-
-            print("Medio Perigo")
-
-            if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
-                self.driveMotors(0.15,-0.5)
-            else: 
-                self.driveMotors(-0.5,0.15)
-
-        elif self.measures.irSensor[center_id] > 0.5\
-            or self.measures.irSensor[left_id]   > 2.2\
-            or self.measures.irSensor[right_id]  > 2.2\
-            or self.measures.irSensor[back_id]   > 2.2:
-
-            print("Baixo Perigo")
-
-            if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
-                self.driveMotors(0.15,0.1)
-            else:
-                self.driveMotors(0.1,0.15)
-
-        else:
-            self.driveMotors(0.15,0.15)
 
     def wander(self):
         center_id = 0
