@@ -10,7 +10,10 @@ CELLCOLS=14
 
 class MyRob(CRobLinkAngs):
     flag = 0
-    lap = 0
+    stop = False
+    xorigem = 0
+    yorigen = 0
+    rodando = False
     
     def __init__(self, rob_name, rob_id, angles, host):
         CRobLinkAngs.__init__(self, rob_name, rob_id, angles, host)
@@ -32,8 +35,17 @@ class MyRob(CRobLinkAngs):
         state = 'stop'
         stopped_state = 'run'
 
+
         while True:
             self.readSensors()
+
+            if self.flag == 0:
+                self.xorigem = self.measures.x
+                self.yorigem = self.measures.y
+                self.flag = 1
+                print("x origem", self.xorigem)
+
+            
 
             if self.measures.endLed:
                 print(self.rob_name + " exiting")
@@ -67,9 +79,64 @@ class MyRob(CRobLinkAngs):
                 self.mapping()
             
     def mapping(self):
-        print("x: ", self.measures.x)
-        print("y: ", self.measures.x)
-        print("dir: ", self.measures.dir)
+
+        # print("\nx atual : ", self.measures.x)
+        
+
+        # estou em celula
+        if ((self.measures.x == (self.xorigem + 2))) or self.rodando == True:
+            print("celula")
+            self.xorigem = self.xorigem + 2
+            
+
+            # print("front: ",  self.measures.irSensor[0])
+            
+            ## estou a frente de uma parede
+            if (self.measures.irSensor[0] > 2.2) or (self.rodando == True):
+                
+                self.stop = True
+                self.driveMotors(0.00,0.00)
+
+                # print("stop = true")
+                # print("left: ", self.measures.irSensor[1])
+                # print("right: ", self.measures.irSensor[2])
+                # print("back: ", self.measures.irSensor[3])
+                
+                
+                # ja rodei
+                if(self.measures.compass == -90):
+                    # print("ESTOU NA DIRECAO CERTAAAAAAAAAAAAAAA")
+                    self.rodando = False
+                    self.stop = False
+                # ainda n rodei
+                elif(self.measures.compass != -90):
+                    self.rodando = True
+                    # print("rodando")
+                    self.driveMotors(0.01,-0.01)
+
+                # print("fim")
+
+            ## nao tenho nada a frente
+            else:
+                print("stop = false")
+                self.stop = False
+        
+        # nao estou em celula
+        elif ((self.measures.x) != (self.xorigem + 2) and self.stop == False):
+            if self.measures.compass > 0:
+                # print("compass > 0:  ", self.measures.compass)
+
+                self.driveMotors(0.10,0.09)
+            elif self.measures.compass < 0:
+                # print("compass < 0:  ", self.measures.compass)
+                
+                self.driveMotors(0.09,0.10)
+
+            elif self.measures.compass == 0:
+                # print("compass == 0:  ", self.measures.compass)
+                self.driveMotors(0.10,0.10)
+        else:
+            print("estranho")
 
 
     def wander(self):

@@ -70,7 +70,6 @@ class MyRob(CRobLinkAngs):
         center_id = 0
         left_id = 1
         right_id = 2
-        back_id = 3
 
         print("    Voltas feitas: ", self.lap)
 
@@ -117,9 +116,9 @@ class MyRob(CRobLinkAngs):
             or self.measures.irSensor[right_id]  > 2.1:
             print("Sem Perigo")
             if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
-                self.driveMotors(0.15,0.14)
+                self.driveMotors(0.15,0.145)
             else:
-                self.driveMotors(0.14,0.15)
+                self.driveMotors(0.145,0.15)
         else:
             self.driveMotors(0.15,0.15)
 
