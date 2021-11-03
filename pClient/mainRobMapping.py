@@ -12,8 +12,9 @@ class MyRob(CRobLinkAngs):
     flag = 0
     stop = False
     xorigem = 0
-    yorigen = 0
+    yorigem = 0
     rodando = False
+    direcao = "North"
     
     def __init__(self, rob_name, rob_id, angles, host):
         CRobLinkAngs.__init__(self, rob_name, rob_id, angles, host)
@@ -44,8 +45,7 @@ class MyRob(CRobLinkAngs):
                 self.yorigem = self.measures.y
                 self.flag = 1
                 print("x origem", self.xorigem)
-
-            
+                print("y origem", self.yorigem)
 
             if self.measures.endLed:
                 print(self.rob_name + " exiting")
@@ -79,86 +79,150 @@ class MyRob(CRobLinkAngs):
                 self.mapping()
             
     def mapping(self):
+        # self.driveMotors(-0.01,0.01)
+        # print("self.measures.compass: ", self.measures.compass)
+        if self.direcao == "North":
+            self.goingNorth()
+        elif self.direcao == "West":
+            self.goingWest()
+        elif self.direcao == "South":
+            self.goingSouth()
+        elif self.direcao == "East":
+            self.goingEast()
 
-        # print("\nx atual : ", self.measures.x)
-        
 
-        # estou em celula
-        if ((self.measures.x == (self.xorigem + 2))) or self.rodando == True:
-            print("celula")
-            self.xorigem = self.xorigem + 2
-            
-
-            # print("front: ",  self.measures.irSensor[0])
-            
-            ## estou a frente de uma parede
-            if (self.measures.irSensor[0] > 2.2) or (self.rodando == True):
-                
-                self.stop = True
-                self.driveMotors(0.00,0.00)
-
-                # print("stop = true")
-                # print("left: ", self.measures.irSensor[1])
-                # print("right: ", self.measures.irSensor[2])
-                # print("back: ", self.measures.irSensor[3])
-                
-                
-                # ja rodei
-                if(self.measures.compass == -90):
-                    # print("ESTOU NA DIRECAO CERTAAAAAAAAAAAAAAA")
-                    self.rodando = False
-                    self.stop = False
-                # ainda n rodei
-                elif(self.measures.compass != -90):
-                    self.rodando = True
-                    # print("rodando")
-                    self.driveMotors(0.01,-0.01)
-
-                # print("fim")
-
-            ## nao tenho nada a frente
-            else:
-                print("stop = false")
+    def goingNorth(self):
+        if self.rodando == True:
+            if self.measures.compass == -91 or self.measures.compass == -90 or self.measures.compass == -89:
+                self.direcao = "West"
+                self.rodando = False
                 self.stop = False
-        
-        # nao estou em celula
-        elif ((self.measures.x) != (self.xorigem + 2) and self.stop == False):
+                self.xorigem = self.xorigem - 2
+            else:
+                self.driveMotors(0.01,-0.01)
+        elif self.measures.x == self.xorigem and self.measures.irSensor[0] < 2.0:
+            print("front: ",  self.measures.irSensor[0])
+            print("celula x")
+            self.xorigem = self.xorigem + 2
+            self.stop = False
+        elif self.measures.x == self.xorigem and self.measures.irSensor[0] > 2.0:
+            print("front: ",  self.measures.irSensor[0])
+            self.driveMotors(0.00,0.00)
+            print("celula x perigo")
+            self.xorigem = self.xorigem + 2
+            print("para crg")
+            self.rodando = True
+            self.stop = True
+        elif (self.measures.x != self.xorigem) and self.stop == False:
             if self.measures.compass > 0:
-                # print("compass > 0:  ", self.measures.compass)
-
-                self.driveMotors(0.10,0.09)
+                self.driveMotors(0.04,0.03)
             elif self.measures.compass < 0:
-                # print("compass < 0:  ", self.measures.compass)
-                
-                self.driveMotors(0.09,0.10)
-
+                self.driveMotors(0.03,0.04)
             elif self.measures.compass == 0:
-                # print("compass == 0:  ", self.measures.compass)
-                self.driveMotors(0.10,0.10)
+                self.driveMotors(0.04,0.04)
         else:
             print("estranho")
 
-
-    def wander(self):
-        center_id = 0
-        left_id = 1
-        right_id = 2
-        back_id = 3
-        if    self.measures.irSensor[center_id] > 5.0\
-           or self.measures.irSensor[left_id]   > 5.0\
-           or self.measures.irSensor[right_id]  > 5.0\
-           or self.measures.irSensor[back_id]   > 5.0:
-            print('Rotate left')
-            self.driveMotors(-0.1,+0.1)
-        elif self.measures.irSensor[left_id]> 2.7:
-            print('Rotate slowly right')
-            self.driveMotors(0.1,0.0)
-        elif self.measures.irSensor[right_id]> 2.7:
-            print('Rotate slowly left')
-            self.driveMotors(0.0,0.1)
+    def goingWest(self):
+        if self.rodando == True:
+            if self.measures.compass == -179 or self.measures.compass == 180 or self.measures.compass == 179:
+                self.direcao = "South"
+                self.rodando = False
+                self.stop = False
+                self.yorigem = self.yorigem + 2
+            else:
+                self.driveMotors(0.01,-0.01)
+        elif self.measures.y == self.yorigem and self.measures.irSensor[0] < 2.0:
+            print("celula y")
+            self.yorigem = self.yorigem - 2
+            self.stop = False
+        elif self.measures.y == self.yorigem and self.measures.irSensor[0] > 2.0:
+            self.driveMotors(0.00,0.00)
+            print("celula y perigo")
+            self.yorigem = self.yorigem - 2
+            print("para crg")
+            self.rodando = True
+            self.stop = True
+        elif (self.measures.y != self.yorigem) and self.stop == False:
+            if self.measures.compass > -90:
+                self.driveMotors(0.04,0.03)
+            elif self.measures.compass < -90:
+                self.driveMotors(0.03,0.04)
+            elif self.measures.compass == -90:
+                self.driveMotors(0.04,0.04)
         else:
-            print('Go')
-            self.driveMotors(0.1,0.1)
+            print("estranho")
+
+    def goingSouth(self):
+        # print("self.measures.x: ", self.measures.x)
+        # print("self.xorigem: ", self.xorigem)
+        if self.rodando == True:
+            print("rodando")
+            if self.measures.compass == 91 or self.measures.compass == 90 or self.measures.compass == 89:
+                self.direcao = "East"
+                self.rodando = False
+                self.stop = False
+                self.xorigem = self.xorigem + 2
+            else:
+                self.driveMotors(0.01,-0.01)
+
+        elif self.measures.x == self.xorigem and self.measures.irSensor[0] < 2.0:
+            print("\ncelula x\n")
+            self.xorigem = self.xorigem - 2
+            self.stop = False
+        elif self.measures.x == self.xorigem and self.measures.irSensor[0] > 2.0:
+            self.driveMotors(0.00,0.00)
+            print("celula x perigo")
+            self.xorigem = self.xorigem - 2
+            print("para crg")
+            self.rodando = True
+            self.stop = True
+        elif (self.measures.x != self.xorigem) and self.stop == False:
+            # print("self.measures.compass: ", self.measures.compass)
+            if self.measures.compass > -179 and self.measures.compass < -1 :
+                # print("para vira direita")
+                self.driveMotors(0.03,0.04)
+            elif self.measures.compass > 1 and self.measures.compass < 179:
+                # print("para vira esquerda")
+                self.driveMotors(0.03,0.04)
+            elif self.measures.compass == 180 or self.measures.compass == -180:
+                # print("siga em frentee")
+                self.driveMotors(0.04,0.04)
+        else:
+            print("estranho")
+
+    def goingEast(self):
+        if self.rodando == True:
+            print("rodando")
+            if self.measures.compass == -1 or self.measures.compass == 0 or self.measures.compass == 1:
+                self.direcao = "North"
+                self.rodando = False
+                self.stop = False
+                self.yorigem = self.yorigem - 2
+            else:
+                self.driveMotors(0.01,-0.01)
+
+        elif self.measures.y == self.yorigem and self.measures.irSensor[0] < 2.0:
+            print("\ncelula y\n")
+            self.yorigem = self.yorigem + 2
+            self.stop = False
+        elif self.measures.y == self.yorigem and self.measures.irSensor[0] > 2.0:
+            self.driveMotors(0.00,0.00)
+            print("celula y perigo")
+            self.yorigem = self.yorigem + 2
+            print("para crg")
+            self.rodando = True
+            self.stop = True
+        elif (self.measures.y != self.yorigem) and self.stop == False:
+            if self.measures.compass > 90:
+                self.driveMotors(0.04,0.03)
+            elif self.measures.compass < 90:
+                self.driveMotors(0.03,0.04)
+            elif self.measures.compass == 90:
+                self.driveMotors(0.04,0.04)
+        else:
+            print("estranho")
+
 
 class Map():
     def __init__(self, filename):
