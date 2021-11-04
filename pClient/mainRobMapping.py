@@ -15,6 +15,7 @@ class MyRob(CRobLinkAngs):
     yorigem = 0
     rodando = False
     direcao = "North"
+    desvioy = 0
     
     def __init__(self, rob_name, rob_id, angles, host):
         CRobLinkAngs.__init__(self, rob_name, rob_id, angles, host)
@@ -44,7 +45,7 @@ class MyRob(CRobLinkAngs):
                 self.xorigem = self.measures.x
                 self.yorigem = self.measures.y
                 self.flag = 1
-                print("x origem", self.xorigem)
+                # print("x origem", self.xorigem)
                 print("y origem", self.yorigem)
 
             if self.measures.endLed:
@@ -98,6 +99,8 @@ class MyRob(CRobLinkAngs):
                 self.rodando = False
                 self.stop = False
                 self.xorigem = self.xorigem - 2
+                self.desvioy = self.measures.y - self.yorigem
+                print("desvio no y:", self.desvioy)
             else:
                 self.driveMotors(0.01,-0.01)
         elif self.measures.x == self.xorigem and self.measures.irSensor[0] < 2.0:
@@ -119,11 +122,15 @@ class MyRob(CRobLinkAngs):
             elif self.measures.compass < 0:
                 self.driveMotors(0.03,0.04)
             elif self.measures.compass == 0:
-                self.driveMotors(0.04,0.04)
+                self.driveMotors(0.08,0.08)
         else:
             print("estranho")
 
     def goingWest(self):
+        # print("self.measures.y: ", self.measures.y)
+        # print("self.yorigem: ", self.yorigem)
+        # print("self.measures.y + desvio: ", self.measures.y - self.desvioy)
+
         if self.rodando == True:
             if self.measures.compass == -179 or self.measures.compass == 180 or self.measures.compass == 179:
                 self.direcao = "South"
@@ -132,24 +139,30 @@ class MyRob(CRobLinkAngs):
                 self.yorigem = self.yorigem + 2
             else:
                 self.driveMotors(0.01,-0.01)
-        elif self.measures.y == self.yorigem and self.measures.irSensor[0] < 2.0:
+
+        elif (self.measures.y - self.desvioy) == self.yorigem and self.measures.irSensor[0] < 2.0:
             print("celula y")
-            self.yorigem = self.yorigem - 2
+            print("self.measures.y: ", self.measures.y)
+            print("tem que andar: ", 2 + self.desvioy)
+            self.yorigem = self.yorigem - 2 + self.desvioy
+            self.desvioy = 0
             self.stop = False
-        elif self.measures.y == self.yorigem and self.measures.irSensor[0] > 2.0:
+        elif (self.measures.y - self.desvioy) == self.yorigem and self.measures.irSensor[0] > 2.0:
             self.driveMotors(0.00,0.00)
             print("celula y perigo")
-            self.yorigem = self.yorigem - 2
+            self.yorigem = self.yorigem - 2 + self.desvioy
+            self.desvioy = 0
             print("para crg")
             self.rodando = True
             self.stop = True
         elif (self.measures.y != self.yorigem) and self.stop == False:
+            # print("no celula y")
             if self.measures.compass > -90:
                 self.driveMotors(0.04,0.03)
             elif self.measures.compass < -90:
                 self.driveMotors(0.03,0.04)
             elif self.measures.compass == -90:
-                self.driveMotors(0.04,0.04)
+                self.driveMotors(0.08,0.08)
         else:
             print("estranho")
 
@@ -178,16 +191,16 @@ class MyRob(CRobLinkAngs):
             self.rodando = True
             self.stop = True
         elif (self.measures.x != self.xorigem) and self.stop == False:
-            # print("self.measures.compass: ", self.measures.compass)
-            if self.measures.compass > -179 and self.measures.compass < -1 :
+            print("self.measures.compass: ", self.measures.compass)
+            if self.measures.compass > -180 and self.measures.compass < -1 :
                 # print("para vira direita")
-                self.driveMotors(0.03,0.04)
-            elif self.measures.compass > 1 and self.measures.compass < 179:
+                self.driveMotors(0.04,0.03)
+            elif self.measures.compass > 1 and self.measures.compass < 180:
                 # print("para vira esquerda")
                 self.driveMotors(0.03,0.04)
-            elif self.measures.compass == 180 or self.measures.compass == -180:
+            elif (self.measures.compass == 180) or (self.measures.compass == -180):
                 # print("siga em frentee")
-                self.driveMotors(0.04,0.04)
+                self.driveMotors(0.08,0.08)
         else:
             print("estranho")
 
@@ -219,7 +232,7 @@ class MyRob(CRobLinkAngs):
             elif self.measures.compass < 90:
                 self.driveMotors(0.03,0.04)
             elif self.measures.compass == 90:
-                self.driveMotors(0.04,0.04)
+                self.driveMotors(0.08,0.08)
         else:
             print("estranho")
 
