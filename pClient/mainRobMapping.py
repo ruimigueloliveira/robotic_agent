@@ -3,6 +3,9 @@ import sys
 from croblink import *
 from math import *
 import xml.etree.ElementTree as ET
+import numpy as np
+np.set_printoptions(threshold=np.inf)
+
 
 CELLROWS=7
 CELLCOLS=14
@@ -19,7 +22,11 @@ class MyRob(CRobLinkAngs):
     center_id = 0
     left_id = 1
     right_id = 2
+    back_id = 3
     proximadirecao = ""
+    xorigemmatriz = 13
+    yorigemmatriz = 27
+    matrix = 0
     
     def __init__(self, rob_name, rob_id, angles, host):
         CRobLinkAngs.__init__(self, rob_name, rob_id, angles, host)
@@ -50,6 +57,14 @@ class MyRob(CRobLinkAngs):
                 self.flag = 1
                 # origem = (self.measures.x, self.measures.y)
                 # print(origem)
+                rows, colums = 55, 27
+                self.matrix = [[" " for x in range(rows)] for y in range(colums)] 
+                self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "I"
+
+
+                print('\n'.join([''.join(['{:}'.format(item) for item in row]) 
+                    for row in self.matrix]))
+
 
             if self.measures.endLed:
                 print(self.rob_name + " exiting")
@@ -83,6 +98,7 @@ class MyRob(CRobLinkAngs):
                 self.mapping()
             
     def mapping(self):
+
         if self.direcao == "North":
             self.goingNorth()
         elif self.direcao == "West":
@@ -102,6 +118,7 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.stop = False
                     self.desvioy = self.measures.y - self.yorigem
+                    self.yorigemmatriz = self.yorigemmatriz - 2
                     # print("desvio y: ", self.desvioy)
                 else:
                     self.driveMotors(0.01,-0.01)
@@ -112,19 +129,28 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.stop = False
                     self.desvioy = self.measures.y - self.yorigem
+                    self.yorigemmatriz = self.yorigemmatriz - 2
                     # print("desvio y: ", self.desvioy)
                 else:
                     self.driveMotors(-0.01,0.01)
         elif self.measures.x == (self.xorigem + self.desviox) and self.measures.irSensor[self.center_id] < 1.6:
             point = (self.measures.x, self.yorigem)
             print(point)
+            
+            self.drawMapNorth()
+
             # print("celula x: ", self.measures.x)
             self.xorigem = self.xorigem + 2 + self.desviox
             self.desviox = 0
             self.stop = False
+            
+            
         elif self.measures.x == (self.xorigem + self.desviox) and self.measures.irSensor[self.center_id] > 1.6:
             point = (self.measures.x, self.yorigem)
             print(point)
+
+            self.drawMapNorth()
+
             # print("celula x com perigo: ", self.measures.x)
             self.driveMotors(0.00,0.00)
             self.desviox = 0
@@ -139,6 +165,7 @@ class MyRob(CRobLinkAngs):
             else:
                 # print("vou ter decidir - East para ja")
                 self.proximadirecao = "East"
+            
         elif (self.measures.x != (self.xorigem + self.desviox)) and self.stop == False and self.measures.irSensor[self.center_id] < 1.6 :
             if self.measures.compass > 0:
                 self.driveMotors(0.04,0.03)
@@ -150,6 +177,8 @@ class MyRob(CRobLinkAngs):
             self.driveMotors(0.01,0.01)
             # print("ajuste")
 
+        
+
     def goingWest(self):
         if self.rodando == True:
             # print("rodando")
@@ -160,6 +189,7 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.stop = False
                     self.desviox = self.measures.x - self.xorigem
+                    self.xorigemmatriz = self.xorigemmatriz + 2
                     # print("desvio x: ", self.desviox)
                 else:
                     self.driveMotors(-0.01,+0.01)
@@ -170,12 +200,14 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.stop = False
                     self.desviox = self.measures.x - self.xorigem
+                    self.xorigemmatriz = self.xorigemmatriz + 2
                     # print("desvio x: ", self.desviox)
                 else:
                     self.driveMotors(0.01,-0.01)
         elif self.measures.y == (self.yorigem + self.desvioy) and self.measures.irSensor[self.center_id] < 1.6:
             point = (self.xorigem, self.measures.y)
             print(point)
+            self.drawMapWest()
             # print("celula y: ", self.measures.y)
             self.yorigem = self.yorigem + 2 + self.desvioy
             self.desvioy = 0
@@ -183,6 +215,7 @@ class MyRob(CRobLinkAngs):
         elif self.measures.y == (self.yorigem + self.desvioy) and self.measures.irSensor[self.center_id] > 1.6:
             point = (self.xorigem, self.measures.y)
             print(point)
+            self.drawMapWest()
             # print("celula y com perigo: ", self.measures.y)
             self.driveMotors(0.00,0.00)
             self.desvioy = 0
@@ -218,6 +251,7 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.stop = False
                     self.desvioy = self.measures.y - self.yorigem
+                    self.yorigemmatriz = self.yorigemmatriz + 2
                     # print("desvio y: ", self.desvioy)
                 else:
                     self.driveMotors(0.01,-0.01)
@@ -228,6 +262,7 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.stop = False
                     self.desvioy = self.measures.y - self.yorigem
+                    self.yorigemmatriz = self.yorigemmatriz + 2
                     # print("desvio y: ", self.desvioy)
                 else:
                     self.driveMotors(-0.01,0.01)
@@ -235,6 +270,7 @@ class MyRob(CRobLinkAngs):
         elif self.measures.x == (self.xorigem + self.desviox) and self.measures.irSensor[self.center_id] < 1.6:
             point = (self.measures.x, self.yorigem)
             print(point)
+            self.drawMapSouth()
             # print("celula x: ", self.measures.x)
             self.xorigem = self.xorigem - 2 + self.desviox
             self.desviox = 0
@@ -242,6 +278,7 @@ class MyRob(CRobLinkAngs):
         elif self.measures.x == (self.xorigem + self.desviox) and self.measures.irSensor[self.center_id] > 1.6:
             point = (self.measures.x, self.yorigem)
             print(point)
+            self.drawMapSouth()
             # print("celula x com perigo: ", self.measures.x)
             self.driveMotors(0.00,0.00)
             self.desviox = 0
@@ -277,6 +314,7 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.stop = False
                     self.desviox = self.measures.x - self.xorigem
+                    self.xorigemmatriz = self.xorigemmatriz - 2
                     # print("desvio x: ", self.desviox)
                 else:
                     self.driveMotors(-0.01,0.01)
@@ -287,6 +325,7 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.stop = False
                     self.desviox = self.measures.x - self.xorigem
+                    self.xorigemmatriz = self.xorigemmatriz - 2
                     # print("desvio x: ", self.desviox)
                 else:
                     self.driveMotors(0.01,-0.01)
@@ -294,6 +333,7 @@ class MyRob(CRobLinkAngs):
         elif self.measures.y == (self.yorigem + self.desvioy) and self.measures.irSensor[self.center_id] < 1.6:
             point = (self.xorigem, self.measures.y)
             print(point)
+            self.drawMapEast()
             # print("celula y: ", self.measures.y)
             self.yorigem = self.yorigem - 2 + self.desvioy
             self.desvioy = 0
@@ -301,6 +341,7 @@ class MyRob(CRobLinkAngs):
         elif self.measures.y == (self.yorigem + self.desvioy) and self.measures.irSensor[self.center_id] > 1.6:
             point = (self.xorigem, self.measures.y)
             print(point)
+            self.drawMapEast()
             # print("celula y com perigo: ", self.measures.y)
             self.driveMotors(0.00,0.00)
             self.desvioy = 0
@@ -325,6 +366,162 @@ class MyRob(CRobLinkAngs):
         else:
             self.driveMotors(0.01,0.01)
             # print("ajuste")
+
+
+    def drawMapNorth(self):
+
+        print("posicao mapa north:", (self.xorigemmatriz, self.yorigemmatriz))
+        self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
+
+        if(self.measures.irSensor[self.center_id] > 1.6):
+            print("parede em frente ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "|"
+        else:
+            print("livre em frente ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "X"
+
+        if(self.measures.irSensor[self.left_id] > 1.6):
+            print("parede a esquerda ")
+            self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "-"
+        else:
+            print("livre a esquerda ")
+            self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "X"
+
+        if(self.measures.irSensor[self.right_id] > 1.6):
+            print("parede a direira ")
+            self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "-"
+        else:
+            print("livre a direita ")
+            self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "X"
+
+        if(self.measures.irSensor[self.back_id] > 1.6):
+            print("parede a tras ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "|"
+        else:
+            print("livre a tras ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
+
+        print('\n'.join([''.join(['{:}'.format(item) for item in row]) 
+                for row in self.matrix]))
+
+        self.yorigemmatriz = self.yorigemmatriz + 2
+
+    def drawMapWest(self):
+
+        print("posicao mapa west:", (self.xorigemmatriz, self.yorigemmatriz))
+
+        self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
+
+        if(self.measures.irSensor[self.center_id] > 1.6):
+            print("parede em frente ")
+            self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "-"
+        else:
+            print("livre em frente ")
+            self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "X"
+
+        if(self.measures.irSensor[self.left_id] > 1.6):
+            print("parede a esquerda ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "|"
+        else:
+            print("livre a esquerda ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
+
+        if(self.measures.irSensor[self.right_id] > 1.6):
+            print("parede a direira ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "|"
+        else:
+            print("livre a direita ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "X"
+
+        if(self.measures.irSensor[self.back_id] > 1.6):
+            print("parede a tras ")
+            self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "-"
+        else:
+            print("livre a tras ")
+            self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "X"
+
+        self.xorigemmatriz = self.xorigemmatriz - 2
+
+        print('\n'.join([''.join(['{:}'.format(item) for item in row]) 
+                for row in self.matrix]))
+
+    def drawMapSouth(self):
+
+        print("posicao mapa south:", (self.xorigemmatriz, self.yorigemmatriz))
+        self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
+
+        if(self.measures.irSensor[self.center_id] > 1.6):
+            print("parede em frente ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "|"
+        else:
+            print("livre em frente ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
+
+        if(self.measures.irSensor[self.left_id] > 1.6):
+            print("parede a esquerda ")
+            self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "-"
+        else:
+            print("livre a esquerda ")
+            self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "X"
+
+        if(self.measures.irSensor[self.right_id] > 1.6):
+            print("parede a direira ")
+            self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "-"
+        else:
+            print("livre a direita ")
+            self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "X"
+
+        if(self.measures.irSensor[self.back_id] > 1.6):
+            print("parede a tras ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "|"
+        else:
+            print("livre a tras ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "X"
+
+        print('\n'.join([''.join(['{:}'.format(item) for item in row]) 
+                for row in self.matrix]))
+
+        self.yorigemmatriz = self.yorigemmatriz - 2
+
+    def drawMapEast(self):
+
+        print("posicao mapa east:", (self.xorigemmatriz, self.yorigemmatriz))
+
+        self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
+
+        if(self.measures.irSensor[self.center_id] > 1.6):
+            print("parede em frente ")
+            self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "-"
+        else:
+            print("livre em frente ")
+            self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "X"
+
+        if(self.measures.irSensor[self.left_id] > 1.6):
+            print("parede a esquerda ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "|"
+        else:
+            print("livre a esquerda ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "X"
+
+        if(self.measures.irSensor[self.right_id] > 1.6):
+            print("parede a direira ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "|"
+        else:
+            print("livre a direita ")
+            self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
+
+        if(self.measures.irSensor[self.back_id] > 1.6):
+            print("parede a tras ")
+            self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "-"
+        else:
+            print("livre a tras ")
+            self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "X"
+
+        self.xorigemmatriz = self.xorigemmatriz + 2
+
+        print('\n'.join([''.join(['{:}'.format(item) for item in row]) 
+                for row in self.matrix]))
+
 
 class Map():
     def __init__(self, filename):
