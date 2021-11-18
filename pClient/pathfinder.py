@@ -192,8 +192,8 @@ if __name__ == '__main__':
     end = [4,5] # ending position
     cost = 1 # cost per movement
 
-    path = search(maze,cost, start, end)
+    path = search(maze, cost, start, end)
     print(path)
 
-    print('\n'.join([''.join(["{:" ">3d}".format(item) for item in row]) 
-      for row in path]))
+    # print('\n'.join([''.join(["{:" ">3d}".format(item) for item in row]) 
+    #   for row in path]))
