@@ -89,27 +89,27 @@ class MyRob(CRobLinkAngs):
             or self.measures.irSensor[right_id]  > 2.7:
             print("Alto Perigo")
             if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
-                self.driveMotors(0.15,-0.14)
+                self.driveMotors(0.15,-0.13)
             else:
-                self.driveMotors(-0.14,0.15)
+                self.driveMotors(-0.13,0.15)
 
         elif self.measures.irSensor[center_id] > 1.1\
             or self.measures.irSensor[left_id]   > 2.7\
             or self.measures.irSensor[right_id]  > 2.7:
             print("Medio Perigo")
             if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
-                self.driveMotors(0.15, -0.05)
+                self.driveMotors(0.15, -0.06)
             else: 
-                self.driveMotors(-0.05,0.15)
+                self.driveMotors(-0.06,0.15)
 
         elif self.measures.irSensor[center_id] > 0.6\
             or self.measures.irSensor[left_id]   > 2.6\
             or self.measures.irSensor[right_id]  > 2.6:
             print("Baixo Perigo")
             if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
-                self.driveMotors(0.15,0.09)
+                self.driveMotors(0.15,0.08)
             else: 
-                self.driveMotors(0.09,0.15)
+                self.driveMotors(0.08,0.15)
 
         elif self.measures.irSensor[center_id] > 0.5\
             or self.measures.irSensor[left_id]   > 2.1\
