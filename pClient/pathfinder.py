@@ -37,7 +37,8 @@ def return_path(current_node,maze):
     for i in range(len(path)):
         result[path[i][0]][path[i][1]] = start_value
         start_value += 1
-    return result
+    # return path
+    return path[::2]
 
 
 def search(maze, cost, start, end):
@@ -177,23 +178,32 @@ def search(maze, cost, start, end):
             # Add the child to the yet_to_visit list
             yet_to_visit_list.append(child)
 
-        print(current_node.position)
+        # print(current_node.position)
 
 
 if __name__ == '__main__':
 
-    maze = [[0, 1, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0],
-            [0, 1, 0, 1, 0, 0],
-            [0, 1, 0, 0, 1, 0],
-            [0, 0, 0, 0, 1, 0]]
+    # maze = [[0, 1, 0, 0, 0, 0],
+    #         [0, 0, 0, 0, 0, 0],
+    #         [0, 1, 0, 1, 0, 0],
+    #         [0, 1, 0, 0, 1, 0],
+    #         [0, 0, 0, 0, 1, 0]]
+
+    maze= [[0 for x in range(5)] for y in range(5)]
+    maze[4][0] = 3
+
+    print("maze: ")
+
+    print('\n'.join([''.join(['{:}'.format(item) for item in row]) 
+            for row in maze]))
     
-    start = [0, 0] # starting position
-    end = [4,5] # ending position
+    # posicao [y,x]
+
+    start = [4, 0] # starting position
+    end = [0, 1] # ending position 
     cost = 1 # cost per movement
-
     path = search(maze, cost, start, end)
-    print(path)
-
-    # print('\n'.join([''.join(["{:" ">3d}".format(item) for item in row]) 
-    #   for row in path]))
+    
+    print("\nstart:", start)
+    print("end:", end)
+    print("path:", path)
