@@ -98,6 +98,9 @@ class MyRob(CRobLinkAngs):
             
     def mapping(self):
 
+
+        print("self.measures.ground: ", self.measures.ground)
+
         with open('mapping.out', 'w') as out:
                 for i in self.matrix:
                     out.write(''.join(i))
