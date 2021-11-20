@@ -2,9 +2,6 @@ import sys
 from croblink import *
 from math import *
 import xml.etree.ElementTree as ET
-import numpy as np
-import pathfinder
-import random
 
 CELLROWS=7
 CELLCOLS=14
@@ -24,11 +21,8 @@ class MyRob(CRobLinkAngs):
     xorigemmatriz = 13
     yorigemmatriz = 27
     matrix = 0
-    astarmaze = 0
     nosparavisitar = []
-    nosparavisitarastar = []
     nosvisitados = []
-    nosvisitadosastar = []
     xorigemtransformada = 13
     yorigemtransformada = 27
     xorigemdesvio = 0
@@ -37,7 +31,6 @@ class MyRob(CRobLinkAngs):
     ydesvio = 0
     xorigemdesvioatribuido = False
     yorigemdesvioatribuido = False
-    Northforced = False
 
     def __init__(self, rob_name, rob_id, angles, host):
         CRobLinkAngs.__init__(self, rob_name, rob_id, angles, host)
@@ -61,31 +54,14 @@ class MyRob(CRobLinkAngs):
 
         while True:
             self.readSensors()
+
             if self.flag == 0:
                 self.xorigem = self.measures.x
                 self.yorigem = self.measures.y
                 self.flag = 1
                 rows, colums = 55, 27
                 self.matrix = [[" " for x in range(rows)] for y in range(colums)]
-                
                 self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "I"
-
-                self.astarmaze = [[1 for x in range(rows)] for y in range(colums)]
-
-                # self.astarmaze[self.xorigemmatriz][self.yorigemmatriz] = 0
-                # self.astarmaze[self.xorigemmatriz][self.yorigemmatriz+1] = 0
-                # self.astarmaze[self.xorigemmatriz][self.yorigemmatriz+2] = 0
-                # self.astarmaze[self.xorigemmatriz-1][self.yorigemmatriz+2] = 0
-                # self.astarmaze[self.xorigemmatriz-2][self.yorigemmatriz+2] = 0
-                # self.astarmaze[self.xorigemmatriz-2][self.yorigemmatriz+3] = 0
-                # self.astarmaze[self.xorigemmatriz-2][self.yorigemmatriz+4] = 0
-                
-
-                # self.printAstarMaze()
-
-                # print("closest node: ", self.closest_node((self.node), (self.nodes)) )
-                # self.printMatrix()
-
 
             if self.measures.endLed:
                 print(self.rob_name + " exiting")
@@ -104,6 +80,7 @@ class MyRob(CRobLinkAngs):
                 if self.measures.ground==0:
                     self.setVisitingLed(True);
                 self.mapping()
+
             elif state=='wait':
                 self.setReturningLed(True)
                 if self.measures.visitingLed==True:
@@ -111,6 +88,7 @@ class MyRob(CRobLinkAngs):
                 if self.measures.returningLed==True:
                     state='return'
                 self.driveMotors(0.0,0.0)
+
             elif state=='return':
                 if self.measures.visitingLed==True:
                     self.setVisitingLed(False)
@@ -124,19 +102,23 @@ class MyRob(CRobLinkAngs):
                 for i in self.matrix:
                     out.write(''.join(i))
                     out.write('\n')
-
+        
         self.xpontoatual = self.measures.x - (self.xorigem - 13)
         self.ypontoatual = self.measures.y - (self.yorigem - 27)
 
         if self.direcao == "North":
             self.goingNorth()
+            self.checkEnd()
         elif self.direcao == "West":
             self.goingWest()
+            self.checkEnd()
         elif self.direcao == "South":
             self.goingSouth()
+            self.checkEnd()
         elif self.direcao == "East":
             self.goingEast()
-
+            self.checkEnd()
+        
     def goingNorth(self):
 
         if self.yorigemdesvioatribuido == False:
@@ -153,11 +135,9 @@ class MyRob(CRobLinkAngs):
                     self.yorigemmatriz = self.yorigemmatriz - 2
                     self.yorigemdesvioatribuido = False
                     self.ydesvio = self.ypontoatual - self.yorigemdesvio
-                    # print("desvio y: ", self.ydesvio)
                 else:
-                    # print("compass: ", self.measures.compass)
                     if (self.measures.compass < 0) and (self.measures.compass >= -40):
-                        self.driveMotors(0.10, -0.10)
+                        self.driveMotors(0.15, -0.15)
                     elif (self.measures.compass < -40) and (self.measures.compass >= -70):
                         self.driveMotors(0.04, -0.04)
                     elif (self.measures.compass < -70) and (self.measures.compass >= -80):
@@ -176,11 +156,9 @@ class MyRob(CRobLinkAngs):
                     self.yorigemmatriz = self.yorigemmatriz - 2
                     self.yorigemdesvioatribuido = False
                     self.ydesvio = self.ypontoatual - self.yorigemdesvio
-                    # print("desvio y: ", self.ydesvio)
                 else:
-                    # print("compass: ", self.measures.compass)
                     if (self.measures.compass > 0) and (self.measures.compass <= 40):
-                        self.driveMotors(-0.10, 0.10)
+                        self.driveMotors(-0.15, 0.15)
                     elif (self.measures.compass > 40) and (self.measures.compass <= 70):
                         self.driveMotors(-0.04, 0.04)
                     elif (self.measures.compass > 70) and (self.measures.compass <= 80):
@@ -196,14 +174,12 @@ class MyRob(CRobLinkAngs):
                     self.proximadirecao = ""
                     self.rodando = False
                     self.stop = False
-                    self.xorigemmatriz = self.xorigemmatriz + 2
-                    self.xorigemdesvioatribuido = False
-                    self.xdesvio = self.xpontoatual - self.xorigemdesvio
-                    # print("desvio x: ", self.xdesvio)
+                    self.yorigemmatriz = self.yorigemmatriz - 2
+                    self.yorigemdesvioatribuido = False
+                    self.ydesvio = self.ypontoatual - self.yorigemdesvio
                 else:
-                    print("compass: ", self.measures.compass)
                     if (self.measures.compass > 0) and (self.measures.compass <= 130):
-                        self.driveMotors(-0.10, 0.10)
+                        self.driveMotors(-0.15, 0.15)
                     elif (self.measures.compass > 130) and (self.measures.compass <= 160):
                         self.driveMotors(-0.04, 0.04)
                     elif (self.measures.compass > 160) and (self.measures.compass <= 170):
@@ -213,15 +189,7 @@ class MyRob(CRobLinkAngs):
                     else:
                         self.driveMotors(-0.03, 0.03)
             
-
-        elif (self.xpontoatual - self.xdesvio) == (self.xorigemtransformada) and self.measures.irSensor[self.center_id] < 1.6 :
-
-            
-            start = [13, 27]
-            endnode = [11, 31]
-            
-            print("\nPATH: ", pathfinder.search(self.astarmaze, 1, start, endnode))
-
+        elif (self.xpontoatual - self.xdesvio) == (self.xorigemtransformada) and self.measures.irSensor[self.center_id] < 1.5 :
             self.driveMotors(0.00,0.00)
             self.xdesvio = 0
             point = (self.xpontoatual - self.xdesvio, self.ypontoatual)
@@ -229,32 +197,41 @@ class MyRob(CRobLinkAngs):
             self.drawMapNorth()
             self.stop = False
             
-            # self.xorigemtransformada = self.xorigemtransformada + 2
-            
-            
-            if (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual+2)) > 0) and (self.measures.irSensor[self.left_id] < 1.6):
+            if (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual+2)) > 0) and (self.measures.irSensor[self.left_id] < 1.5):
                 print("WEST por visitar")
                 self.rodando = True
                 self.proximadirecao = "West"
-            elif (self.nosparavisitar.count((self.xpontoatual+2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.center_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual+2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.center_id] < 1.5):
                 print("NORTH por visitar")
                 self.proximadirecao = "North"
                 self.xorigemtransformada = self.xorigemtransformada + 2
-            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual-2)) > 0) and (self.measures.irSensor[self.right_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual-2)) > 0) and (self.measures.irSensor[self.right_id] < 1.5):
                 self.rodando = True
                 print("EAST por visitar")
                 self.proximadirecao = "East"
-            elif (self.nosparavisitar.count((self.xpontoatual-2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.back_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual-2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.back_id] < 1.5):
                 self.rodando = True
                 print("SOUTH por visitar")
                 self.proximadirecao = "South"
             else:
                 print("NORTH POR EXCLUSAO")
-                self.proximadirecao = "North"
-                self.xorigemtransformada = self.xorigemtransformada + 2
-            
-        elif ((self.xpontoatual - self.xdesvio) == (self.xorigemtransformada) and self.measures.irSensor[self.center_id] > 1.6):
 
+                if self.measures.irSensor[self.center_id] < 1.5:
+                    print("vou em frente - North")
+                    self.proximadirecao = "North"
+                    self.xorigemtransformada = self.xorigemtransformada + 2
+
+                elif self.measures.irSensor[self.right_id] < 1.5:
+                    print("vou direita - East")
+                    self.rodando = True
+                    self.proximadirecao = "East"
+
+                elif self.measures.irSensor[self.left_id] < 1.5:
+                    self.rodando = True
+                    print("vou esquerda - West")
+                    self.proximadirecao = "West"
+                
+        elif ((self.xpontoatual - self.xdesvio) == (self.xorigemtransformada) and self.measures.irSensor[self.center_id] >= 1.5):
             self.xdesvio = 0
             point = (self.xpontoatual - self.xdesvio, self.ypontoatual)
             self.evaluateNorth(point)
@@ -263,45 +240,40 @@ class MyRob(CRobLinkAngs):
             self.rodando = True
             self.stop = True
 
-            if (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual+2)) > 0) and (self.measures.irSensor[self.left_id] < 1.6):
+            if (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual+2)) > 0) and (self.measures.irSensor[self.left_id] < 1.5):
                 print("WEST por visitar")
                 self.proximadirecao = "West"
-            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual-2)) > 0) and (self.measures.irSensor[self.right_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual-2)) > 0) and (self.measures.irSensor[self.right_id] < 1.5):
                 print("EAST por visitar")
                 self.proximadirecao = "East"
-            elif (self.nosparavisitar.count((self.xpontoatual-2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.back_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual-2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.back_id] < 1.5):
                 print("SOUTH por visitar")
                 self.proximadirecao = "South"
             else:
-                # print("\nTODAS AS POSICOES DISPONIVEIS JA FORAM VISITADAS")
-                # print("POSICOES POR DESCOBRIR (LISTA SUJA): ", self.nosparavisitar)
-                # for node in self.nosparavisitar:
-                #     node[0] = round(node[0],0)
-                #     node[1] = round(node[1],0)
-                # self.nosparavisitar = list(dict.fromkeys(self.nosparavisitar))
-                # print("POSICOES POR DESCOBRIR (LISTA LIMPA): ", self.nosparavisitar)
-                # print("POSICAO MAIS PROXIMA: ", self.closest_node((self.xpontoatual,self.ypontoatual),(self.nosparavisitar)))
-                # print("PATH: ")
-                # self.driveMotors(0.0,0.0)
+                print("todas as posicoes a volta descobertas")
 
-                if self.measures.irSensor[self.left_id] > self.measures.irSensor[self.right_id]:
+                if self.measures.irSensor[self.left_id] < 1.5:
+                    print("vou esquerda - West")
+                    self.proximadirecao = "West"
+
+                elif self.measures.irSensor[self.right_id] < 1.5:
                     print("vou direita - East")
                     self.proximadirecao = "East"
-                elif self.measures.irSensor[self.left_id] < self.measures.irSensor[self.right_id]:
-                    print("vou esquerda - West")
-                    self.proximadirecao = "West"
-                else:
-                    print("vou esquerda - West")
-                    self.proximadirecao = "West"
 
-                
-        elif ((self.xpontoatual - self.xdesvio) != (self.xorigemtransformada)) and self.stop == False and self.measures.irSensor[self.center_id] < 1.6 :
+                elif self.measures.irSensor[self.center_id] < 1.5:
+                    print("vou em frente - North")
+                    self.proximadirecao = "North"
+                    self.xorigemtransformada = self.xorigemtransformada + 2
+                else:
+                    print("vou tras - South")
+                    self.proximadirecao = "East"
+     
+        elif ((self.xpontoatual - self.xdesvio) != (self.xorigemtransformada)) and self.stop == False and self.measures.irSensor[self.center_id] < 1.5 :
             if self.measures.compass > 0:
                 self.driveMotors(0.07,0.05)
             elif self.measures.compass < 0:
                 self.driveMotors(0.05,0.07)
             elif self.measures.compass == 0:
-                # print("la diferenca: ", abs((self.xpontoatual - self.xdesvio) - (self.xorigemtransformada)))
                 if (abs((self.xpontoatual - self.xdesvio) - (self.xorigemtransformada))) > 0.45:
                     self.driveMotors(0.15,0.15)
                 elif (abs((self.xpontoatual - self.xdesvio) - (self.xorigemtransformada))) > 0.15:
@@ -317,7 +289,6 @@ class MyRob(CRobLinkAngs):
             elif self.measures.compass < 0:
                 self.driveMotors(0.05,0.07)
             elif self.measures.compass == 0:
-                # print("la diferenca: ", abs((self.xpontoatual - self.xdesvio) - (self.xorigemtransformada)))
                 if (abs((self.xpontoatual - self.xdesvio) - (self.xorigemtransformada))) > 0.45:
                     self.driveMotors(0.15,0.15)
                 elif (abs((self.xpontoatual - self.xdesvio) - (self.xorigemtransformada))) > 0.15:
@@ -343,11 +314,9 @@ class MyRob(CRobLinkAngs):
                     self.xorigemmatriz = self.xorigemmatriz + 2
                     self.xorigemdesvioatribuido = False
                     self.xdesvio = self.xpontoatual - self.xorigemdesvio
-                    # print("desvio x: ", self.xdesvio)
                 else:
-                    # print("compass: ", self.measures.compass)
                     if (self.measures.compass > 90) and (self.measures.compass <= 130):
-                        self.driveMotors(-0.10, 0.10)
+                        self.driveMotors(-0.15, 0.15)
                     elif (self.measures.compass > 130) and (self.measures.compass <= 160):
                         self.driveMotors(-0.04, 0.04)
                     elif (self.measures.compass > 160) and (self.measures.compass <= 170):
@@ -366,11 +335,9 @@ class MyRob(CRobLinkAngs):
                     self.xorigemmatriz = self.xorigemmatriz + 2
                     self.xorigemdesvioatribuido = False
                     self.xdesvio = self.xpontoatual - self.xorigemdesvio
-                    # print("desvio x: ", self.xdesvio)
                 else:
-                    # print("compass: ", self.measures.compass)
                     if (self.measures.compass > 50) and (self.measures.compass <= 90):
-                        self.driveMotors(0.10, -0.10)
+                        self.driveMotors(0.15, -0.15)
                     elif (self.measures.compass > 20) and (self.measures.compass <= 50):
                         self.driveMotors(0.04, -0.04)
                     elif (self.measures.compass > 10) and (self.measures.compass <= 20):
@@ -386,16 +353,14 @@ class MyRob(CRobLinkAngs):
                     self.proximadirecao = ""
                     self.rodando = False
                     self.stop = False
-                    self.yorigemmatriz = self.yorigemmatriz - 2
-                    self.yorigemdesvioatribuido = False
-                    self.ydesvio = self.ypontoatual - self.yorigemdesvio
-                    # print("desvio y: ", self.ydesvio)
+                    self.xorigemmatriz = self.xorigemmatriz + 2
+                    self.xorigemdesvioatribuido = False
+                    self.xdesvio = self.xpontoatual - self.xorigemdesvio
                 else:
-                    # print("compass: ", self.measures.compass)
                     if(self.measures.compass >= 0):
                         self.driveMotors(0.03, -0.03)
                     elif (self.measures.compass < 0) and (self.measures.compass >= -40):
-                        self.driveMotors(0.10, -0.10)
+                        self.driveMotors(0.15, -0.15)
                     elif (self.measures.compass < -40) and (self.measures.compass >= -70):
                         self.driveMotors(0.04, -0.04)
                     elif (self.measures.compass < -70) and (self.measures.compass >= -80):
@@ -405,7 +370,7 @@ class MyRob(CRobLinkAngs):
                     else:
                         self.driveMotors(0.03, -0.03)
 
-        elif (self.ypontoatual - self.ydesvio) == (self.yorigemtransformada) and self.measures.irSensor[self.center_id] < 1.6:
+        elif (self.ypontoatual - self.ydesvio) == (self.yorigemtransformada) and self.measures.irSensor[self.center_id] < 1.5:
             self.driveMotors(0.00,0.00)
             self.ydesvio = 0
             point = (self.xpontoatual, self.ypontoatual - self.ydesvio) 
@@ -413,32 +378,41 @@ class MyRob(CRobLinkAngs):
             self.drawMapWest()
             self.stop = False
 
-            # self.yorigemtransformada = self.yorigemtransformada + 2
-
-            if (self.nosparavisitar.count((self.xpontoatual-2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.left_id] < 1.6):
+            if (self.nosparavisitar.count((self.xpontoatual-2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.left_id] < 1.5):
                 print("SOUTH por visitar")
                 self.rodando = True
                 self.proximadirecao = "South"
-
-            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual+2)) > 0) and (self.measures.irSensor[self.center_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual+2)) > 0) and (self.measures.irSensor[self.center_id] < 1.5):
                 print("WEST por visitar")
                 self.proximadirecao = "West"
                 self.yorigemtransformada = self.yorigemtransformada + 2
-            
-            elif (self.nosparavisitar.count((self.xpontoatual+2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.right_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual+2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.right_id] < 1.5):
                 print("NORTH por visitar")
                 self.rodando = True
                 self.proximadirecao = "North"
-            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual-2)) > 0) and (self.measures.irSensor[self.back_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual-2)) > 0) and (self.measures.irSensor[self.back_id] < 1.5):
                 print("EAST por visitar")
                 self.rodando = True
                 self.proximadirecao = "East"
             else:
                 print("WEST POR EXCLUSAO")
-                self.proximadirecao = "West"
-                self.yorigemtransformada = self.yorigemtransformada + 2
 
-        elif (self.ypontoatual- self.ydesvio) == (self.yorigemtransformada) and self.measures.irSensor[self.center_id] > 1.6:
+                if self.measures.irSensor[self.center_id] < 1.5:
+                    print("vou em frente - West")
+                    self.proximadirecao = "West"
+                    self.yorigemtransformada = self.yorigemtransformada + 2
+
+                elif self.measures.irSensor[self.left_id] < 1.5:
+                    self.rodando = True
+                    print("vou esquerda - South")
+                    self.proximadirecao = "South"
+                
+                elif self.measures.irSensor[self.right_id] < 1.5:
+                    print("vou direita - North")
+                    self.rodando = True
+                    self.proximadirecao = "North"
+
+        elif (self.ypontoatual- self.ydesvio) == (self.yorigemtransformada) and self.measures.irSensor[self.center_id] >= 1.5:
             self.ydesvio = 0
             point = (self.xpontoatual, self.ypontoatual - self.ydesvio)
             self.evaluateWest(point)
@@ -447,74 +421,36 @@ class MyRob(CRobLinkAngs):
             self.rodando = True
             self.stop = True
             
-            if (self.nosparavisitar.count((self.xpontoatual-2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.left_id] < 1.6):
+            if (self.nosparavisitar.count((self.xpontoatual-2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.left_id] < 1.5):
                 print("SOUTH por visitar")
                 self.proximadirecao = "South"
-            elif (self.nosparavisitar.count((self.xpontoatual+2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.right_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual+2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.right_id] < 1.5):
                 print("NORTH por visitar")
                 self.proximadirecao = "North"
-            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual-2)) > 0) and (self.measures.irSensor[self.back_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual-2)) > 0) and (self.measures.irSensor[self.back_id] < 1.5):
                 print("EAST por visitar")
                 self.proximadirecao = "East"
             else:
-
-                # print("\n")
-                # self.printAstarMaze()
-
-                # print("\nPOSICOES POR DESCOBRIR : ", self.nosparavisitarastar)
-
-                
-                # start = [self.xorigemmatriz, self.yorigemmatriz]
-                # print("\nSTART: ", start)
-                # lenghtmaior = 55*27
-                # pathmenor = []
-                # for endnode in self.nosparavisitarastar:
-                #     print("\nEND: ", [endnode[0], endnode[1]])
-                #     path = pathfinder.search(self.astarmaze, 1, start, [endnode[0], endnode[1]])
-                #     print("\npath: ", path)
-                #     if len(path) < lenghtmaior:
-                #         lenghtmaior = len(path)
-                #         print("\nPATH MENOR!")
-                #         pathmenor = path
-
-                # print("\nPATH: ", pathmenor)
-
-
                 print("todas as posicoes a volta descobertas")
+
+                if self.measures.irSensor[self.center_id] < 1.5:
+                    print("vou em frente - West")
+                    self.proximadirecao = "West"
+                    self.yorigemtransformada = self.yorigemtransformada + 2
+
+                elif self.measures.irSensor[self.left_id] < 1.5:
+                    print("vou esquerda - South")
+                    self.proximadirecao = "South"
                 
-                self.driveMotors(0.0,0.0)
-
-                # r = (random.randint(1, 4))
-                # print("random: ", r)
-
-                # if (r == 1) and (self.measures.irSensor[self.left_id]) < 1.5:
-                #     print("vou esquerda - South")
-                #     self.proximadirecao = "South"
-
-                # elif (r == 2) and (self.measures.irSensor[self.right_id]) < 1.5:
-                #     print("vou direita - North")
-                #     self.proximadirecao = "North"
-
-                # elif (r == 3) and (self.measures.irSensor[self.center_id]) < 1.5:
-                #     print("vou frente - West")
-                #     self.proximadirecao = "West"
-
-                # elif (r == 4) and (self.measures.irSensor[self.back_id]) < 1.5:
-                #     print("vou tras - East")
-                #     self.proximadirecao = "East"
-
-
-                if self.measures.irSensor[self.left_id] > self.measures.irSensor[self.right_id]:
+                elif self.measures.irSensor[self.right_id] < 1.5:
                     print("vou direita - North")
                     self.proximadirecao = "North"
-                elif self.measures.irSensor[self.left_id] < self.measures.irSensor[self.right_id]:
-                    print("vou esquerda - South")
-                    self.proximadirecao = "South"
-                else:
-                    print("vou esquerda - South")
-                    self.proximadirecao = "South"
 
-        elif ((self.ypontoatual - self.ydesvio) != (self.yorigemtransformada)) and self.stop == False and self.measures.irSensor[self.center_id] < 1.6:
+                elif self.measures.irSensor[self.back_id] < 1.5:
+                    print("vou pa tras - East")
+                    self.proximadirecao = "East"
+                
+        elif ((self.ypontoatual - self.ydesvio) != (self.yorigemtransformada)) and self.stop == False and self.measures.irSensor[self.center_id] < 1.5:
             if self.measures.compass > 90:
                 self.driveMotors(0.07,0.05)
             elif self.measures.compass < 90:
@@ -562,11 +498,9 @@ class MyRob(CRobLinkAngs):
                     self.yorigemmatriz = self.yorigemmatriz + 2
                     self.yorigemdesvioatribuido = False
                     self.ydesvio = self.ypontoatual - self.yorigemdesvio
-                    # print("desvio y: ", self.ydesvio)
                 else:
-                    # print("compass: ", self.measures.compass)
                     if (self.measures.compass < 180) and (self.measures.compass >= 140):
-                        self.driveMotors(0.10, -0.10)
+                        self.driveMotors(0.15, -0.15)
                     elif (self.measures.compass < 140) and (self.measures.compass >= 110):
                         self.driveMotors(0.04, -0.04)
                     elif (self.measures.compass < 110) and (self.measures.compass >= 100):
@@ -575,7 +509,6 @@ class MyRob(CRobLinkAngs):
                         self.driveMotors(0.005, -0.005)
                     else:
                         self.driveMotors(0.03, -0.03)
-
 
             elif self.proximadirecao == "East":
                 if self.measures.compass == -90:
@@ -586,11 +519,9 @@ class MyRob(CRobLinkAngs):
                     self.yorigemmatriz = self.yorigemmatriz + 2
                     self.yorigemdesvioatribuido = False
                     self.ydesvio = self.ypontoatual - self.yorigemdesvio
-                    # print("desvio y: ", self.ydesvio)
                 else:
-                    # print("compass: ", self.measures.compass)
                     if (self.measures.compass < -140) and (self.measures.compass >= -180):
-                        self.driveMotors(-0.10, 0.10)
+                        self.driveMotors(-0.15, 0.15)
                     elif (self.measures.compass < -110) and (self.measures.compass >= -140):
                         self.driveMotors(-0.04, 0.04)
                     elif (self.measures.compass < -100) and (self.measures.compass >= -110):
@@ -599,11 +530,29 @@ class MyRob(CRobLinkAngs):
                         self.driveMotors(-0.005, 0.005)
                     else:
                         self.driveMotors(-0.03, 0.03)
+            
+            elif self.proximadirecao == "North":
+                if self.measures.compass == 0:
+                    self.direcao = "North"
+                    self.proximadirecao = ""
+                    self.rodando = False
+                    self.stop = False
+                    self.yorigemmatriz = self.yorigemmatriz + 2
+                    self.yorigemdesvioatribuido = False
+                    self.ydesvio = self.ypontoatual - self.yorigemdesvio
+                else:
+                    if (self.measures.compass > 50) and (self.measures.compass <= 180):
+                        self.driveMotors(0.15, -0.15)
+                    elif (self.measures.compass > 20) and (self.measures.compass <= 50):
+                        self.driveMotors(0.04, -0.04)
+                    elif (self.measures.compass > 10) and (self.measures.compass <= 20):
+                        self.driveMotors(0.02, -0.02)
+                    elif (self.measures.compass > 0) and (self.measures.compass <= 10):
+                        self.driveMotors(0.005, -0.005)
+                    else:
+                        self.driveMotors(0.03, -0.03)
 
-
-
-
-        elif (self.xpontoatual - self.xdesvio) == (self.xorigemtransformada) and self.measures.irSensor[self.center_id] < 1.6:
+        elif (self.xpontoatual - self.xdesvio) == (self.xorigemtransformada) and self.measures.irSensor[self.center_id] < 1.5:
             self.driveMotors(0.00,0.00)
             self.xdesvio = 0
             point = (self.xpontoatual - self.xdesvio, self.ypontoatual)
@@ -611,44 +560,43 @@ class MyRob(CRobLinkAngs):
             self.drawMapSouth()
             self.stop = False
 
-            # self.xorigemtransformada = self.xorigemtransformada - 2
-
-            if (self.nosparavisitar.count((self.xpontoatual-2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.center_id] < 1.6): 
+            if (self.nosparavisitar.count((self.xpontoatual-2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.center_id] < 1.5): 
                 print("SOUTH por visitar")
                 self.proximadirecao = "South"
                 self.xorigemtransformada = self.xorigemtransformada - 2
-            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual-2)) > 0) and (self.measures.irSensor[self.left_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual-2)) > 0) and (self.measures.irSensor[self.left_id] < 1.5):
                 print("EAST por visitar")
                 self.rodando = True
                 self.proximadirecao = "East"
-            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual+2)) > 0) and (self.measures.irSensor[self.right_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual+2)) > 0) and (self.measures.irSensor[self.right_id] < 1.5):
                 print("WEST por visitar")
                 self.rodando = True
                 self.proximadirecao = "West"
-            elif (self.nosparavisitar.count((self.xpontoatual+2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.back_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual+2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.back_id] < 1.5):
                 print("NORTH por visitar")
                 self.rodando = True
                 self.proximadirecao = "North"
             else:
                 print("SOUTH POR EXCLUSAO")
 
-                if self.measures.irSensor[self.left_id] < 1.6:
+                
+
+                if self.measures.irSensor[self.left_id] < 1.5:
                     self.rodando = True
                     print("vou esquerda - East")
                     self.proximadirecao = "East"
 
-                elif self.measures.irSensor[self.center_id] < 1.6:
-                    print("vou em frete - South")
+                elif self.measures.irSensor[self.left_id] < 1.5:
+                    self.rodando = True
+                    print("vou esquerda - East")
+                    self.proximadirecao = "East"
+
+                elif self.measures.irSensor[self.center_id] < 1.5:
+                    print("vou em frente - South")
                     self.proximadirecao = "South"
                     self.xorigemtransformada = self.xorigemtransformada - 2
-                
-                elif self.measures.irSensor[self.right_id] < 1.6:
-                    print("vou direita - West")
-                    self.rodando = True
-                    self.proximadirecao = "West"
-                
-
-        elif (self.xpontoatual - self.xdesvio) == (self.xorigemtransformada) and self.measures.irSensor[self.center_id] > 1.6:
+  
+        elif (self.xpontoatual - self.xdesvio) == (self.xorigemtransformada) and self.measures.irSensor[self.center_id] >= 1.5:
             self.xdesvio = 0
             point = (self.xpontoatual - self.xdesvio, self.ypontoatual)
             self.evaluateSouth(point)
@@ -657,37 +605,36 @@ class MyRob(CRobLinkAngs):
             self.rodando = True
             self.stop = True
             
-            if (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual-2)) > 0) and (self.measures.irSensor[self.left_id] < 1.6):
+            if (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual-2)) > 0) and (self.measures.irSensor[self.left_id] < 1.5):
                 print("EAST por visitar")
                 self.proximadirecao = "East"
-            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual+2)) > 0) and (self.measures.irSensor[self.right_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual+2)) > 0) and (self.measures.irSensor[self.right_id] < 1.5):
                 print("WEST por visitar")
                 self.proximadirecao = "West"
-            elif (self.nosparavisitar.count((self.xpontoatual+2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.back_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual+2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.back_id] < 1.5):
                 print("NORTH por visitar")
                 self.proximadirecao = "North"
             else:
-                # print("\nTODAS AS POSICOES DISPONIVEIS JA FORAM VISITADAS")
-                # print("POSICOES POR DESCOBRIR (LISTA SUJA): ", self.nosparavisitar)
-                # for node in self.nosparavisitar:
-                #     node[0] = round(node[0],0)
-                #     node[1] = round(node[1],0)
-                # self.nosparavisitar = list(dict.fromkeys(self.nosparavisitar))
-                # print("POSICOES POR DESCOBRIR (LISTA LIMPA): ", self.nosparavisitar)
-                # print("POSICAO MAIS PROXIMA: ", self.closest_node((self.xpontoatual,self.ypontoatual),(self.nosparavisitar)))
-                # print("PATH: ")
-                # self.driveMotors(0.0,0.0)
-                if self.measures.irSensor[self.left_id] > self.measures.irSensor[self.right_id]:
+                print("todas as posicoes a volta descobertas")
+
+                if self.measures.irSensor[self.right_id] < 1.5:
                     print("vou direita - West")
                     self.proximadirecao = "West"
-                elif self.measures.irSensor[self.left_id] < self.measures.irSensor[self.right_id]:
-                    print("vou esquerda - East")
-                    self.proximadirecao = "East"
-                else:
-                    print("vou esquerda - East")
-                    self.proximadirecao = "East"
 
-        elif ( (self.xpontoatual - self.xdesvio) != (self.xorigem)) and self.stop == False and self.measures.irSensor[self.center_id] < 1.6:
+                elif self.measures.irSensor[self.left_id] < 1.5:
+                    print("vou esquerda - East")
+                    self.proximadirecao = "East"
+                
+                elif self.measures.irSensor[self.center_id] < 1.5:
+                    print("vou em frente - South")
+                    self.proximadirecao = "South"
+                    self.yorigemtransformada = self.yorigemtransformada - 2
+
+                elif self.measures.irSensor[self.back_id] < 1.5:
+                    print("vou pa tras - North")
+                    self.proximadirecao = "North"
+
+        elif ((self.xpontoatual - self.xdesvio) != (self.xorigem)) and self.stop == False and self.measures.irSensor[self.center_id] < 1.5:
             if self.measures.compass > -180 and self.measures.compass < -1 :
                 self.driveMotors(0.07,0.05)
             elif self.measures.compass > 1 and self.measures.compass < 180:
@@ -701,6 +648,7 @@ class MyRob(CRobLinkAngs):
                     self.driveMotors(0.01,0.01)
                 else:
                     self.driveMotors(0.005,0.005)
+        
         else:
             if self.measures.compass > -180 and self.measures.compass < -1 :
                 self.driveMotors(0.07,0.05)
@@ -718,7 +666,6 @@ class MyRob(CRobLinkAngs):
 
     def goingEast(self):
 
-        
         if self.xorigemdesvioatribuido == False:
             self.xorigemdesvio = self.xpontoatual
             self.xorigemdesvioatribuido = True
@@ -733,11 +680,9 @@ class MyRob(CRobLinkAngs):
                     self.xorigemmatriz = self.xorigemmatriz - 2
                     self.xorigemdesvioatribuido = False
                     self.xdesvio = self.xpontoatual - self.xorigemdesvio
-                    # print("desvio x: ", self.xdesvio)
                 else:
-                    # print("compass: ", self.measures.compass)
                     if (self.measures.compass > -90) and (self.measures.compass <= -50):
-                        self.driveMotors(-0.10, 0.10)
+                        self.driveMotors(-0.15, 0.15)
                     elif (self.measures.compass > -50) and (self.measures.compass <= -20):
                         self.driveMotors(-0.04, 0.04)
                     elif (self.measures.compass > -20) and (self.measures.compass <= -10):
@@ -756,11 +701,9 @@ class MyRob(CRobLinkAngs):
                     self.xorigemmatriz = self.xorigemmatriz - 2
                     self.xorigemdesvioatribuido = False
                     self.xdesvio = self.xpontoatual - self.xorigemdesvio
-                    # print("desvio x: ", self.xdesvio)
                 else:
-                    # print("compass: ", self.measures.compass)
                     if (self.measures.compass < -90) and (self.measures.compass >= -130):
-                        self.driveMotors(0.10, -0.10)
+                        self.driveMotors(0.15, -0.15)
                     elif (self.measures.compass < -130) and (self.measures.compass >= -160):
                         self.driveMotors(0.04, -0.04)
                     elif (self.measures.compass < -160) and (self.measures.compass >= -170):
@@ -769,27 +712,31 @@ class MyRob(CRobLinkAngs):
                         self.driveMotors(0.005, -0.005)
                     else:
                         self.driveMotors(0.03, -0.03)
+
+            elif self.proximadirecao == "West":
+                if self.measures.compass == 90:
+                    self.direcao = "West"
+                    self.proximadirecao = ""
+                    self.rodando = False
+                    self.stop = False
+                    self.xorigemmatriz = self.xorigemmatriz - 2
+                    self.xorigemdesvioatribuido = False
+                    self.xdesvio = self.xpontoatual - self.xorigemdesvio
+                else:
+                    if(self.measures.compass <= 0):
+                        self.driveMotors(0.03, -0.03)
+                    elif (self.measures.compass > 0) and (self.measures.compass <= 40):
+                        self.driveMotors(0.15, -0.15)
+                    elif (self.measures.compass > 40) and (self.measures.compass <= 70):
+                        self.driveMotors(0.04, -0.04)
+                    elif (self.measures.compass > 70) and (self.measures.compass <= 80):
+                        self.driveMotors(0.02, -0.02)
+                    elif (self.measures.compass > 80) and (self.measures.compass < 90):
+                        self.driveMotors(0.005, -0.005)
+                    else:
+                        self.driveMotors(0.03, -0.03)
                         
-
-        elif (self.ypontoatual - self.ydesvio) == (self.yorigemtransformada) and self.measures.irSensor[self.center_id] < 1.6:
-
-            # self.printAstarMaze()
-
-            # start = [11, 41]
-            # endnode = [13, 27]
-            
-            # print("\nPATH: ", pathfinder.search(self.astarmaze, 1, start, endnode))
-
-
-            # self.printAstarMaze()
-            
-            # start = [self.xorigemmatriz, self.yorigemmatriz]
-            # end = [13,27]
-            
-            # print("\nSTART: ", start)
-            # print("END: ", end)
-
-            # print("\nPATH: ", pathfinder.search(self.astarmaze, 1, start, end))
+        elif (self.ypontoatual - self.ydesvio) == (self.yorigemtransformada) and self.measures.irSensor[self.center_id] < 1.5:
            
             self.driveMotors(0.0,0.0)
             self.driveMotors(0.00,0.00)
@@ -801,37 +748,35 @@ class MyRob(CRobLinkAngs):
 
             # self.yorigemtransformada = self.yorigemtransformada - 2
 
-            if (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual-2)) > 0) and (self.measures.irSensor[self.center_id] < 1.6):
+            if (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual-2)) > 0) and (self.measures.irSensor[self.center_id] < 1.5):
                 print("EAST por visitar")
                 self.proximadirecao = "East"
                 self.yorigemtransformada = self.yorigemtransformada - 2
-            elif (self.nosparavisitar.count((self.xpontoatual+2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.left_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual+2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.left_id] < 1.5):
                 print("NORTH por visitar")
                 self.rodando = True
                 self.proximadirecao = "North"
            
-            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual+2)) > 0) and (self.measures.irSensor[self.back_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual+2)) > 0) and (self.measures.irSensor[self.back_id] < 1.5):
                 print("WEST esta por visitar")
                 self.rodando = True
                 self.proximadirecao = "West"
             else:
                 print("EAST POR EXCLUSAO")
                 
-                
-                
-                if self.measures.irSensor[self.center_id] < 1.6:
+                if self.measures.irSensor[self.center_id] < 1.5:
                     self.proximadirecao = "East"
                     self.yorigemtransformada = self.yorigemtransformada - 2
-                elif self.measures.irSensor[self.left_id] < 1.6:
+                elif self.measures.irSensor[self.left_id] < 1.5:
                     self.rodando = True
                     print("vou esquerda - North")
                     self.proximadirecao = "North"
-                elif self.measures.irSensor[self.right_id] < 1.6:
+                elif self.measures.irSensor[self.right_id] < 1.5:
                     print("vou direita - South")
                     self.rodando = True
                     self.proximadirecao = "South"
 
-        elif (self.ypontoatual - self.ydesvio) == (self.yorigemtransformada) and self.measures.irSensor[self.center_id] > 1.6:
+        elif (self.ypontoatual - self.ydesvio) == (self.yorigemtransformada) and self.measures.irSensor[self.center_id] >= 1.5:
             self.ydesvio = 0
             point = (self.xpontoatual - self.ydesvio, self.ypontoatual)
             self.evaluateEast(point)
@@ -840,38 +785,35 @@ class MyRob(CRobLinkAngs):
             self.rodando = True
             self.stop = True
             
-            if (self.nosparavisitar.count((self.xpontoatual+2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.left_id] < 1.6):
+            if (self.nosparavisitar.count((self.xpontoatual+2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.left_id] < 1.5):
                 print("NORTH por visitar")
                 self.proximadirecao = "North"
-            elif (self.nosparavisitar.count((self.xpontoatual-2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.right_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual-2,self.ypontoatual)) > 0) and (self.measures.irSensor[self.right_id] < 1.5):
                 print("SOUTH por visitar")
                 self.proximadirecao = "South"
-            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual+2)) > 0) and (self.measures.irSensor[self.back_id] < 1.6):
+            elif (self.nosparavisitar.count((self.xpontoatual,self.ypontoatual+2)) > 0) and (self.measures.irSensor[self.back_id] < 1.5):
                 print("WEST esta por visitar")
                 self.proximadirecao = "West"
             else:
-                # print("\nTODAS AS POSICOES DISPONIVEIS JA FORAM VISITADAS")
-                # print("POSICOES POR DESCOBRIR (LISTA SUJA): ", self.nosparavisitar)
-                # for node in self.nosparavisitar:
-                #     node[0] = round(node[0],0)
-                #     node[1] = round(node[1],0)
-                # self.nosparavisitar = list(dict.fromkeys(self.nosparavisitar))
-                # print("POSICOES POR DESCOBRIR (LISTA LIMPA): ", self.nosparavisitar)
-                # print("POSICAO MAIS PROXIMA: ", self.closest_node((self.xpontoatual,self.ypontoatual),(self.nosparavisitar)))
-                # print("PATH: ")
-                # self.driveMotors(0.0,0.0)
-
-                if self.measures.irSensor[self.left_id] > self.measures.irSensor[self.right_id]:
+                print("todas as posicoes a volta descobertas")
+                if self.measures.irSensor[self.left_id] < 1.5:
+                    print("vou esquerda - North")
+                    self.proximadirecao = "North"
+                
+                elif self.measures.irSensor[self.right_id] < 1.5:
                     print("vou direita - South")
                     self.proximadirecao = "South"
-                elif self.measures.irSensor[self.left_id] < self.measures.irSensor[self.right_id]:
-                    print("vou esquerda - North")
-                    self.proximadirecao = "North"
-                else:
-                    print("vou esquerda - North")
-                    self.proximadirecao = "North"
 
-        elif ((self.ypontoatual - self.ydesvio) != (self.yorigem)) and self.stop == False and self.measures.irSensor[self.center_id] < 1.6:
+                elif self.measures.irSensor[self.center_id] < 1.5:
+                    print("vou em frente - East")
+                    self.proximadirecao = "East"
+                    self.yorigemtransformada = self.yorigemtransformada - 2   
+
+                elif self.measures.irSensor[self.back_id] < 1.5:
+                    print("vou pa tras - West")
+                    self.proximadirecao = "West"         
+
+        elif ((self.ypontoatual - self.ydesvio) != (self.yorigem)) and self.stop == False and self.measures.irSensor[self.center_id] < 1.5:
             if self.measures.compass > -90:
                 self.driveMotors(0.07,0.05)
             elif self.measures.compass < -90:
@@ -886,13 +828,13 @@ class MyRob(CRobLinkAngs):
                     self.driveMotors(0.01,0.01)
                 else:
                     self.driveMotors(0.005,0.005)
+        
         else:
             if self.measures.compass > -90:
                 self.driveMotors(0.07,0.05)
             elif self.measures.compass < -90:
                 self.driveMotors(0.05,0.07)
             elif self.measures.compass == -90:
-                # print("la diferenca: ", abs((self.ypontoatual - self.ydesvio) - (self.yorigemtransformada)))
                 if (abs((self.ypontoatual - self.ydesvio) - (self.yorigemtransformada))) > 0.45:
                     self.driveMotors(0.15,0.15)
                 elif (abs((self.ypontoatual - self.ydesvio) - (self.yorigemtransformada))) > 0.15:
@@ -903,342 +845,274 @@ class MyRob(CRobLinkAngs):
                     self.driveMotors(0.005,0.005)
 
     def evaluateNorth(self, point):
-        x = point[0]
-        y = point[1]
+        x = round(point[0])
+        y = round(point[1])
     
-        print(point)
+        print("\nPONTO ATUAL: ",point)
 
         if self.nosvisitados.count(point) == 0:
             self.nosvisitados.append(point)
 
-        if self.nosvisitadosastar.count((self.xorigemmatriz, self.yorigemmatriz)) == 0:
-            self.nosvisitadosastar.append((self.xorigemmatriz, self.yorigemmatriz))
-
-        if self.measures.irSensor[self.back_id] < 1.6:
+        if self.measures.irSensor[self.back_id] < 1.5:
             if self.nosvisitados.count((x-2, y)) == 0:
                 self.nosparavisitar.append((x-2, y))
-            if self.nosvisitadosastar.count((self.xorigemmatriz, self.yorigemmatriz-1)) == 0:
-                print("sem parede atras")
-                self.nosparavisitarastar.append((self.xorigemmatriz, self.yorigemmatriz-1))
 
-        if(self.measures.irSensor[self.center_id] < 1.6):
+        if(self.measures.irSensor[self.center_id] < 1.5):
             if self.nosvisitados.count((x+2, y)) == 0:
                 self.nosparavisitar.append((x+2, y))
-            if self.nosvisitadosastar.count((self.xorigemmatriz, self.yorigemmatriz+1)) == 0:
-                print("sem parede frente")
-                self.nosparavisitarastar.append((self.xorigemmatriz, self.yorigemmatriz+1))
 
-        if(self.measures.irSensor[self.right_id] < 1.6):
+        if(self.measures.irSensor[self.right_id] < 1.5):
             if self.nosvisitados.count((x, y-2)) == 0:
                 self.nosparavisitar.append((x, y-2))
-            if self.nosvisitadosastar.count((self.xorigemmatriz+1, self.yorigemmatriz)) == 0:
-                print("sem parede right")
-                self.nosparavisitarastar.append((self.xorigemmatriz+1, self.yorigemmatriz))
 
-        if(self.measures.irSensor[self.left_id] < 1.6):
+        if(self.measures.irSensor[self.left_id] < 1.5):
             if self.nosvisitados.count((x, y+2)) == 0:
                 self.nosparavisitar.append((x, y+2))
-            if self.nosvisitadosastar.count((self.xorigemmatriz-1, self.yorigemmatriz)) == 0:
-                print("sem parede left")
-                self.nosparavisitarastar.append((self.xorigemmatriz-1, self.yorigemmatriz))
 
         while self.nosparavisitar.count(point) > 0:
             self.nosparavisitar.remove((x, y))
 
-        while self.nosparavisitarastar.count((self.xorigemmatriz, self.yorigemmatriz)) > 0:
-            self.nosparavisitarastar.remove((self.xorigemmatriz, self.yorigemmatriz))
-
-        # print("nos para visitar astar: ",  list(dict.fromkeys(self.nosparavisitarastar)))
-        # print("nos para visitar: ",  list(dict.fromkeys(self.nosparavisitar)))
-        # print("nos visitados: ", list(dict.fromkeys(self.nosvisitados)))
+        print("NOS PARA VISITAR: ", list(dict.fromkeys(self.nosparavisitar))) 
 
     def evaluateWest(self, point):
-        x = point[0]
-        y = point[1]
+        x = round(point[0])
+        y = round(point[1])
 
-        print(point)
+        print("\nPONTO ATUAL: ",point)
 
         if self.nosvisitados.count(point) == 0:
             self.nosvisitados.append(point)
 
-        if(self.measures.irSensor[self.back_id] < 1.6):
+        if(self.measures.irSensor[self.back_id] < 1.5):
             if self.nosvisitados.count((x, y-2)) == 0:
                 self.nosparavisitar.append((x, y-2))
 
-        if(self.measures.irSensor[self.center_id] < 1.6):
+        if(self.measures.irSensor[self.center_id] < 1.5):
             if self.nosvisitados.count((x, y+2)) == 0:
                 self.nosparavisitar.append((x, y+2))
 
-        if(self.measures.irSensor[self.right_id] < 1.6):
+        if(self.measures.irSensor[self.right_id] < 1.5):
             if self.nosvisitados.count((x+2, y)) == 0:
                 self.nosparavisitar.append((x+2, y))
 
-        if(self.measures.irSensor[self.left_id] < 1.6):
+        if(self.measures.irSensor[self.left_id] < 1.5):
             if self.nosvisitados.count((x-2, y)) == 0:
                 self.nosparavisitar.append((x-2, y))
 
         while self.nosparavisitar.count(point) > 0:
             self.nosparavisitar.remove(point)
 
-
-        # print("nos para visitar: ",  list(dict.fromkeys(self.nosparavisitar)))
-        # print("nos visitados: ", list(dict.fromkeys(self.nosvisitados)))
+        print("NOS PARA VISITAR: ", list(dict.fromkeys(self.nosparavisitar))) 
 
     def evaluateSouth(self, point):
-        x = point[0]
-        y = point[1]
+        x = round(point[0])
+        y = round(point[1])
 
-        print(point)
+        print("\nPONTO ATUAL: ",point)
 
         if self.nosvisitados.count(point) == 0:
             self.nosvisitados.append(point)
 
-        if(self.measures.irSensor[self.back_id] < 1.6):
+        if(self.measures.irSensor[self.back_id] < 1.5):
             if self.nosvisitados.count((x+2, y)) == 0:
                 self.nosparavisitar.append((x+2, y))
 
-        if(self.measures.irSensor[self.center_id] < 1.6):
+        if(self.measures.irSensor[self.center_id] < 1.5):
             if self.nosvisitados.count((x-2, y)) == 0:
                 self.nosparavisitar.append((x-2, y))
 
-        if(self.measures.irSensor[self.right_id] < 1.6):
+        if(self.measures.irSensor[self.right_id] < 1.5):
             if self.nosvisitados.count((x, y+2)) == 0:
                 self.nosparavisitar.append((x, y+2))
 
-        if(self.measures.irSensor[self.left_id] < 1.6):
+        if(self.measures.irSensor[self.left_id] < 1.5):
             if self.nosvisitados.count((x, y-2)) == 0:
                 self.nosparavisitar.append((x, y-2))
 
         while self.nosparavisitar.count(point) > 0:
             self.nosparavisitar.remove(point)
 
-        # print("nos para visitar: ",  list(dict.fromkeys(self.nosparavisitar)))
-        # print("nos visitados: ", list(dict.fromkeys(self.nosvisitados)))
+        print("NOS PARA VISITAR: ", list(dict.fromkeys(self.nosparavisitar))) 
 
     def evaluateEast(self, point):
-        x = point[0]
-        y = point[1]
+        x = round(point[0])
+        y = round(point[1])
 
-        print(point)
+        print("\nPONTO ATUAL: ",point)
 
         if self.nosvisitados.count(point) == 0:
             self.nosvisitados.append(point)
 
-        if(self.measures.irSensor[self.back_id] < 1.6):
+        if(self.measures.irSensor[self.back_id] < 1.5):
             if self.nosvisitados.count((x, y+2)) == 0:
                 self.nosparavisitar.append((x, y+2))
 
-        if(self.measures.irSensor[self.center_id] < 1.6):
+        if(self.measures.irSensor[self.center_id] < 1.5):
             if self.nosvisitados.count((x, y-2)) == 0:
                 self.nosparavisitar.append((x, y-2))
 
-        if(self.measures.irSensor[self.right_id] < 1.6):
+        if(self.measures.irSensor[self.right_id] < 1.5):
             if self.nosvisitados.count((x-2, y)) == 0:
                 self.nosparavisitar.append((x-2, y))
 
-        if(self.measures.irSensor[self.left_id] < 1.6):
+        if(self.measures.irSensor[self.left_id] < 1.5):
             if self.nosvisitados.count((x+2, y)) == 0:
                 self.nosparavisitar.append((x+2, y))
 
         while self.nosparavisitar.count(point) > 0:
             self.nosparavisitar.remove(point)
 
-        # print("nos para visitar: ",  list(dict.fromkeys(self.nosparavisitar)))
-        # print("nos visitados: ", list(dict.fromkeys(self.nosvisitados)))
+        print("NOS PARA VISITAR: ", list(dict.fromkeys(self.nosparavisitar))) 
 
     def drawMapNorth(self):
 
-        print("\nposicao mapa north:", (self.xorigemmatriz, self.yorigemmatriz))
-
         self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
-        self.astarmaze[self.xorigemmatriz][self.yorigemmatriz] = 0
         
         if(self.measures.irSensor[self.center_id] > 1.4):
-            print("parede em frente ")
+            # print("parede em frente ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "|"
         else:
-            print("livre em frente ")
+            # print("livre em frente ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "X"
-            self.astarmaze[self.xorigemmatriz][self.yorigemmatriz+1] = 0
 
         if(self.measures.irSensor[self.left_id] > 1.4):
-            print("parede a esquerda ")
+            # print("parede a esquerda ")
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "-"
         else:
-            print("livre a esquerda ")
+            # print("livre a esquerda ")
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "X"
-            self.astarmaze[self.xorigemmatriz-1][self.yorigemmatriz] = 0
 
         if(self.measures.irSensor[self.right_id] > 1.4):
-            print("parede a direira ")
+            # print("parede a direira ")
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "-"
         else:
-            print("livre a direita ")
+            # print("livre a direita ")
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "X"
-            self.astarmaze[self.xorigemmatriz+1][self.yorigemmatriz] = 0
 
         if(self.measures.irSensor[self.back_id] > 1.4):
-            print("parede a tras ")
+            # print("parede a tras ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "|"
         else:
-            print("livre a tras ")
+            # print("livre a tras ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
-            self.astarmaze[self.xorigemmatriz][self.yorigemmatriz-1] = 0
 
-        # self.printAstarMaze()
-        # self.printMatrix()
+        if  self.matrix[13][27] != "I":
+            self.matrix[13][27] = "I"
 
         self.yorigemmatriz = self.yorigemmatriz + 2
 
     def drawMapWest(self):
 
-        print("\nposicao mapa west:", (self.xorigemmatriz, self.yorigemmatriz))
-
         self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
-        self.astarmaze[self.xorigemmatriz][self.yorigemmatriz] = 0
 
         if(self.measures.irSensor[self.center_id] > 1.4):
-            print("parede em frente ")
+            # print("parede em frente ")
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "-"
         else:
-            print("livre em frente ")
+            # print("livre em frente ")
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "X"
-            self.astarmaze[self.xorigemmatriz-1][self.yorigemmatriz] = 0
 
         if(self.measures.irSensor[self.left_id] > 1.4):
-            print("parede a esquerda ")
+            # print("parede a esquerda ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "|"
         else:
-            print("livre a esquerda ")
+            # print("livre a esquerda ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
-            self.astarmaze[self.xorigemmatriz][self.yorigemmatriz-1] = 0
 
         if(self.measures.irSensor[self.right_id] > 1.4):
-            print("parede a direira ")
+            # print("parede a direira ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "|"
         else:
-            print("livre a direita ")
+            # print("livre a direita ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "X"
-            self.astarmaze[self.xorigemmatriz][self.yorigemmatriz+1] = 0
 
         if(self.measures.irSensor[self.back_id] > 1.4):
-            print("parede a tras ")
+            # print("parede a tras ")
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "-"
         else:
-            print("livre a tras ")
+            # print("livre a tras ")
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "X"
-            self.astarmaze[self.xorigemmatriz+1][self.yorigemmatriz] = 0
 
         self.xorigemmatriz = self.xorigemmatriz - 2
 
-        # self.printAstarMaze()
-        # self.printMatrix()
+        if  self.matrix[13][27] != "I":
+            self.matrix[13][27] = "I"
 
     def drawMapSouth(self):
-
-        print("\nposicao mapa south:", (self.xorigemmatriz, self.yorigemmatriz))
         self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
-        self.astarmaze[self.xorigemmatriz][self.yorigemmatriz] = 0
 
         if(self.measures.irSensor[self.center_id] > 1.4):
-            print("parede em frente ")
+            # print("parede em frente ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "|"
         else:
-            print("livre em frente ")
+            # print("livre em frente ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
-            self.astarmaze[self.xorigemmatriz][self.yorigemmatriz-1] = 0
 
         if(self.measures.irSensor[self.left_id] > 1.4):
-            print("parede a esquerda ")
+            # print("parede a esquerda ")
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "-"
         else:
-            print("livre a esquerda ")
+            # print("livre a esquerda ")
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "X"
-            self.astarmaze[self.xorigemmatriz+1][self.yorigemmatriz] = 0
 
         if(self.measures.irSensor[self.right_id] > 1.4):
-            print("parede a direira ")
+            # print("parede a direira ")
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "-"
         else:
-            print("livre a direita ")
+            # print("livre a direita ")
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "X"
-            self.astarmaze[self.xorigemmatriz-1][self.yorigemmatriz] = 0
 
         if(self.measures.irSensor[self.back_id] > 1.4):
-            print("parede a tras ")
+            # print("parede a tras ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "|"
         else:
-            print("livre a tras ")
+            # print("livre a tras ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "X"
-            self.astarmaze[self.xorigemmatriz][self.yorigemmatriz+1] = 0
 
-        # self.printAstarMaze()
-        # self.printMatrix()
+        if  self.matrix[13][27] != "I":
+            self.matrix[13][27] = "I"
 
         self.yorigemmatriz = self.yorigemmatriz - 2
 
     def drawMapEast(self):
-
-        print("\nposicao mapa east:", (self.xorigemmatriz, self.yorigemmatriz))
-
         self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
-        self.astarmaze[self.xorigemmatriz][self.yorigemmatriz] = 0
 
         if(self.measures.irSensor[self.center_id] > 1.4):
-            print("parede em frente ")
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "-"
         else:
-            print("livre em frente ")
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "X"
-            self.astarmaze[self.xorigemmatriz+1][self.yorigemmatriz] = 0
 
         if(self.measures.irSensor[self.left_id] > 1.4):
-            print("parede a esquerda ")
+            # print("parede a esquerda ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "|"
         else:
-            print("livre a esquerda ")
+            # print("livre a esquerda ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "X"
-            self.astarmaze[self.xorigemmatriz][self.yorigemmatriz+1] = 0
 
         if(self.measures.irSensor[self.right_id] > 1.4):
-            print("parede a direira ")
+            # print("parede a direira ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "|"
         else:
-            print("livre a direita ")
+            # print("livre a direita ")
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
-            self.astarmaze[self.xorigemmatriz][self.yorigemmatriz-1] = 0
 
         if(self.measures.irSensor[self.back_id] > 1.4):
-            print("parede a tras ")
+            # print("parede a tras ")
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "-"
         else:
-            print("livre a tras ")
+            # print("livre a tras ")
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "X"
-            self.astarmaze[self.xorigemmatriz-1][self.yorigemmatriz] = 0
 
         self.xorigemmatriz = self.xorigemmatriz + 2
 
-        # self.printAstarMaze()
-        # self.printMatrix()
+        if  self.matrix[13][27] != "I":
+            self.matrix[13][27] = "I"
 
-    def printMatrix(self):
-        print('\n'.join([''.join(['{:}'.format(item) for item in row]) 
-            for row in self.matrix]))
-
-    def printAstarMaze(self):
-        print('\n'.join([''.join(['{:}'.format(item) for item in row]) 
-            for row in self.astarmaze]))
-
-    def closest_node(self, node, nodes):
-        dist = 10000
-        nmin = 0
-        a = np.array(nodes)
-        for n in a:
-            if np.linalg.norm(node - n) < dist:
-                dist = np.linalg.norm(node - n)
-                nmin = n
-        return nmin
-
+    def checkEnd(self):
+        if len(self.nosparavisitar) == 0:
+            print("TODAS AS POSICOES FORAM ENCONTRDAS")
+            sys.exit()
+    
 class Map():
     def __init__(self, filename):
         tree = ET.parse(filename)
