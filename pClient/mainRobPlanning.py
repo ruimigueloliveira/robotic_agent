@@ -1,3 +1,4 @@
+from os import write
 import sys
 from croblink import *
 from math import *
@@ -124,7 +125,8 @@ class MyRob(CRobLinkAngs):
             self.checkEnd()
         
         if self.measures.ground == 0 and self.groundcontrol == -1:
-
+            self.stop = False
+            self.driveMotors(0.00,0.00)
             if self.direcao=="East":
                 self.pontobeacon0 = [self.xorigemmatriz-2, self.yorigemmatriz]
             elif self.direcao=="West":
@@ -137,14 +139,25 @@ class MyRob(CRobLinkAngs):
             start = self.pontobeacon2
             end = self.pontobeacon0
             self.path2 = pathfinder.search(self.matrix, 1, start, end)
-            print("\nBEACON2 TO BEACON0: ", self.path2)
+            print("\nBEACON 2 TO BEACON 0: ", self.path2)
             self.pathfinal = self.path0 + self.path1 + self.path2 
             self.pathfinal = list(dict.fromkeys(self.pathfinal))
+            self.pathfinal = self.pathfinal + [self.pathfinal[0]]
             print("\nA* MAZE: ")
             self.printMatrix()
             print("\nPATH FINAL: ", self.pathfinal)
-            self.stop = False
-            self.driveMotors(0.00,0.00)
+
+            pathformatada = []
+            for node  in self.pathfinal:
+                pontoformatado = (node[1]-27, -(node[0]-13))
+                pathformatada.append(pontoformatado)
+
+            print("\nPATH FORMATADA: ", pathformatada)
+        
+            with open('planning.out', 'w') as out:
+                for node in pathformatada:
+                    out.write(str(node[0]) + ' ' +  str(node[1]))
+                    out.write('\n')
             sys.exit()
             
         elif self.measures.ground == 0 and self.groundcontrol == 0:
@@ -157,7 +170,7 @@ class MyRob(CRobLinkAngs):
                 self.pontobeacon0 = [self.xorigemmatriz, self.yorigemmatriz-2]
             elif self.direcao=="South":
                 self.pontobeacon0 = [self.xorigemmatriz, self.yorigemmatriz+2]
-            print("BEACON0: ", self.pontobeacon0)
+            print("BEACON 0: ", self.pontobeacon0)
         
         elif self.measures.ground == 1 and self.groundcontrol == 1:
             self.groundcontrol = 2
@@ -173,7 +186,7 @@ class MyRob(CRobLinkAngs):
             start = self.pontobeacon0
             end = self.pontobeacon1
             self.path0 = pathfinder.search(self.matrix, 1, start, end)
-            print("\nBEACON0 TO BEACON1: ", self.path0)
+            print("\nBEACON 0 TO BEACON 1: ", self.path0)
 
         elif self.measures.ground == 2 and self.groundcontrol == 2:
             self.groundcontrol = -1
@@ -189,7 +202,7 @@ class MyRob(CRobLinkAngs):
             start = self.pontobeacon1
             end = self.pontobeacon2
             self.path1 = pathfinder.search(self.matrix, 1, start, end)
-            print("\nBEACON1 TO BEACON2: ", self.path1)
+            print("\nBEACON 1 TO BEACON 2: ", self.path1)
 
     def goingNorth(self):
 
