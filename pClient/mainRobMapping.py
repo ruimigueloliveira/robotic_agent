@@ -118,7 +118,7 @@ class MyRob(CRobLinkAngs):
         elif self.direcao == "East":
             self.goingEast()
             self.checkEnd()
-        
+    
     def goingNorth(self):
 
         if self.yorigemdesvioatribuido == False:

@@ -1,4 +1,3 @@
-
 import sys
 from croblink import *
 from math import *
@@ -6,7 +5,6 @@ import xml.etree.ElementTree as ET
 
 CELLROWS=7
 CELLCOLS=14
-
 
 class MyRob(CRobLinkAngs):
     flag = 0
@@ -70,13 +68,12 @@ class MyRob(CRobLinkAngs):
         center_id = 0
         left_id = 1
         right_id = 2
-
         print("    Voltas feitas: ", self.lap)
-
         print("front: ",  self.measures.irSensor[center_id])
         print("left: ", self.measures.irSensor[left_id])
         print("right: ", self.measures.irSensor[right_id])
 
+        # Contagem Voltas
         if (self.flag == 2) and (self.measures.ground == 0):
             self.flag = 0
             self.lap = self.lap + 1
@@ -84,6 +81,7 @@ class MyRob(CRobLinkAngs):
         if(self.measures.ground == 2):
             self.flag = 2
 
+        # Alto Perigo
         if self.measures.irSensor[center_id] > 2\
             or self.measures.irSensor[left_id]   > 2.7\
             or self.measures.irSensor[right_id]  > 2.7:
@@ -93,6 +91,7 @@ class MyRob(CRobLinkAngs):
             else:
                 self.driveMotors(-0.13,0.15)
 
+        # Medio Perigo
         elif self.measures.irSensor[center_id] > 1.1\
             or self.measures.irSensor[left_id]   > 2.7\
             or self.measures.irSensor[right_id]  > 2.7:
@@ -102,6 +101,7 @@ class MyRob(CRobLinkAngs):
             else: 
                 self.driveMotors(-0.06,0.15)
 
+        # Baixo Perigo
         elif self.measures.irSensor[center_id] > 0.6\
             or self.measures.irSensor[left_id]   > 2.6\
             or self.measures.irSensor[right_id]  > 2.6:
@@ -111,6 +111,7 @@ class MyRob(CRobLinkAngs):
             else: 
                 self.driveMotors(0.08,0.15)
 
+        # Sem perigo
         elif self.measures.irSensor[center_id] > 0.5\
             or self.measures.irSensor[left_id]   > 2.1\
             or self.measures.irSensor[right_id]  > 2.1:
@@ -119,30 +120,9 @@ class MyRob(CRobLinkAngs):
                 self.driveMotors(0.15,0.145)
             else:
                 self.driveMotors(0.145,0.15)
+        
         else:
             self.driveMotors(0.15,0.15)
-
-
-    def wander(self):
-        center_id = 0
-        left_id = 1
-        right_id = 2
-        back_id = 3
-        if    self.measures.irSensor[center_id] > 5.0\
-           or self.measures.irSensor[left_id]   > 5.0\
-           or self.measures.irSensor[right_id]  > 5.0\
-           or self.measures.irSensor[back_id]   > 5.0:
-            print('Rotate left')
-            self.driveMotors(-0.1,+0.1)
-        elif self.measures.irSensor[left_id]> 2.7:
-            print('Rotate slowly right')
-            self.driveMotors(0.1,0.0)
-        elif self.measures.irSensor[right_id]> 2.7:
-            print('Rotate slowly left')
-            self.driveMotors(0.0,0.1)
-        else:
-            print('Go')
-            self.driveMotors(0.1,0.1)
 
 class Map():
     def __init__(self, filename):
@@ -170,7 +150,6 @@ class Map():
                            None
                
            i=i+1
-
 
 rob_name = "pClient1"
 host = "localhost"
