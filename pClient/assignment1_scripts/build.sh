@@ -3,10 +3,14 @@
 # How to build your project
 
 # Possibility for cpp agents
-# make mainC4 
+# make mainC1 
+# make mainC2 
+# make mainC3 
 
 # Possibility for java agents
-# javac mainC4.java
+# javac mainC1.java
+# javac mainC2.java
+# javac mainC3.java
 
 # Possibility for python agents
 # nothing

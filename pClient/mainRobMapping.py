@@ -64,7 +64,7 @@ class MyRob(CRobLinkAngs):
                 self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "I"
 
             if self.measures.endLed:
-                print(self.rob_name + " exiting")
+                print(self.robName + " exiting")
                 quit()
 
             if state == 'stop' and self.measures.start:
@@ -1111,7 +1111,7 @@ class MyRob(CRobLinkAngs):
     def checkEnd(self):
         if len(self.nosparavisitar) == 0:
             print("TODAS AS POSICOES FORAM ENCONTRDAS")
-            sys.exit()
+            self.finish()
     
 class Map():
     def __init__(self, filename):
@@ -1155,7 +1155,7 @@ for i in range(1, len(sys.argv),2):
         rob_name = sys.argv[i + 1]
     elif (sys.argv[i] == "--map" or sys.argv[i] == "-m") and i != len(sys.argv) - 1:
         mapc = Map(sys.argv[i + 1])
-    elif (sys.argv[i] == "--outfile" or sys.argv[i] == "-f") and i != len(sys.argv) - 1:
+    elif (sys.argv[i] == "--outfile.map" or sys.argv[i] == "-f") and i != len(sys.argv) - 1:
         outfile = (sys.argv[i + 1])
     else:
         print("Unkown argument", sys.argv[i])

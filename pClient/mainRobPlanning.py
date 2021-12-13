@@ -74,7 +74,7 @@ class MyRob(CRobLinkAngs):
                 self.matrix = [[1 for x in range(rows)] for y in range(colums)]
 
             if self.measures.endLed:
-                print(self.rob_name + " exiting")
+                print(self.robName + " exiting")
                 quit()
 
             if state == 'stop' and self.measures.start:
@@ -158,7 +158,7 @@ class MyRob(CRobLinkAngs):
                 for node in pathformatada:
                     out.write(str(node[0]) + ' ' +  str(node[1]))
                     out.write('\n')
-            sys.exit()
+            self.finish()
             
         elif self.measures.ground == 0 and self.groundcontrol == 0:
             self.groundcontrol = 1

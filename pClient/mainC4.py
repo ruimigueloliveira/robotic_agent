@@ -73,6 +73,14 @@ class MyRob(CRobLinkAngs):
         print("left: ", self.measures.irSensor[left_id])
         print("right: ", self.measures.irSensor[right_id])
 
+        with open(outfilemap, 'w') as out:
+            out.write("map")
+            out.write('\n')
+
+        with open(outfilepath, 'w') as out:
+            out.write("path")
+            out.write('\n')
+
         # Contagem Voltas
         if (self.flag == 2) and (self.measures.ground == 0):
             self.flag = 0
@@ -155,6 +163,8 @@ rob_name = "pClient1"
 host = "localhost"
 pos = 1
 mapc = None
+outfilemap = "outfilemap"
+outfilepath = "outfilepath"
 
 for i in range(1, len(sys.argv),2):
     if (sys.argv[i] == "--host" or sys.argv[i] == "-h") and i != len(sys.argv) - 1:
@@ -165,6 +175,10 @@ for i in range(1, len(sys.argv),2):
         rob_name = sys.argv[i + 1]
     elif (sys.argv[i] == "--map" or sys.argv[i] == "-m") and i != len(sys.argv) - 1:
         mapc = Map(sys.argv[i + 1])
+    elif (sys.argv[i] == "--outfile" or sys.argv[i] == "-f1") and i != len(sys.argv) - 1:
+        outfilemap = (sys.argv[i + 1])
+    elif (sys.argv[i] == "--outfile" or sys.argv[i] == "-f2") and i != len(sys.argv) - 1:
+        outfilepath = (sys.argv[i + 1])
     else:
         print("Unkown argument", sys.argv[i])
         quit()

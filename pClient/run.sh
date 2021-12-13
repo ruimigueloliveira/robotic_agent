@@ -1,10 +1,10 @@
 #!/bin/bash
 
-challenge="2"
+challenge="4"
 host="localhost"
 robname="theAgent"
 pos="0"
-outfile="mapping.out"
+outfile="solution"
 
 while getopts "c:h:r:p:f:" op
 do
@@ -45,5 +45,22 @@ case $challenge in
         # how to call agent for challenge 3
         python3 mainRobPlanning.py -h "$host" -p "$pos" -r "$robname" -f "$outfile" # assuming -f is the option for the path
         ;;
+    4)
+        # how to call agent for challenge 4
+        python3 mainC4.py -h "$host" -p "$pos" -r "$robname" -f1 "$outfile.map" -f2 "$outfile.path"
+        # mv your_mapfile $outfile.map
+        # mv your_pathfile $outfile.path
+        ;;
+        # how to call agent for challenge 4
+        #java mainC4 -h "$host" -p "$pos" -r "$robname" 
+        #mv your_mapfile $outfile.map
+        #mv your_pathfile $outfile.path
+        #;;
+
+        # how to call agent for challenge 4
+        #./mainC4 -h "$host" -p "$pos" -r "$robname"
+        #mv your_mapfile $outfile.map
+        #mv your_pathfile $outfile.path
+        #;;
 esac
 
