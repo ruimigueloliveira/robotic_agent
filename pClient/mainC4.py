@@ -2,14 +2,29 @@ import sys
 from croblink import *
 from math import *
 import xml.etree.ElementTree as ET
+import math
 
 CELLROWS=7
 CELLCOLS=14
 
 class MyRob(CRobLinkAngs):
-    flag = 0
-    lap = 0
-    
+    closest_direction = "N"
+    start = False
+    in_left = 0
+    in_right = 0
+    current_out_left = 0
+    current_out_right = 0
+    movement_model_x = 13
+    movement_model_y = 27
+    previous_theta = 0
+    movement_model_theta = 0
+    origin_x = 0
+    origin_y = 0
+    sensors_x = 0
+    sensors_y = 0
+    wall_diameter = 0.1
+    robot_radius = 0.5
+
     def __init__(self, rob_name, rob_id, angles, host):
         CRobLinkAngs.__init__(self, rob_name, rob_id, angles, host)
 
@@ -22,6 +37,7 @@ class MyRob(CRobLinkAngs):
         for l in reversed(self.labMap):
             print(''.join([str(l) for l in l]))
 
+    # Initializion
     def run(self):
         if self.status != 0:
             print("Connection refused or error")
@@ -32,6 +48,11 @@ class MyRob(CRobLinkAngs):
 
         while True:
             self.readSensors()
+
+            if self.start == False:
+                self.start = True
+                self.origin_x = self.measures.x
+                self.origin_y = self.measures.y 
 
             if self.measures.endLed:
                 print(self.robName + " exiting")
@@ -49,30 +70,218 @@ class MyRob(CRobLinkAngs):
                     state='wait'
                 if self.measures.ground==0:
                     self.setVisitingLed(True);
-                self.control()
+                self.main()
             elif state=='wait':
                 self.setReturningLed(True)
                 if self.measures.visitingLed==True:
                     self.setVisitingLed(False)
                 if self.measures.returningLed==True:
                     state='return'
-                self.driveMotors(0.0,0.0)
+                self.driveMotorsUpdate(0.0,0.0)
             elif state=='return':
                 if self.measures.visitingLed==True:
                     self.setVisitingLed(False)
                 if self.measures.returningLed==True:
                     self.setReturningLed(False)
-                self.control()
-            
-    def control(self):
-        center_id = 0
-        left_id = 1
-        right_id = 2
-        print("    Voltas feitas: ", self.lap)
-        print("front: ",  self.measures.irSensor[center_id])
-        print("left: ", self.measures.irSensor[left_id])
-        print("right: ", self.measures.irSensor[right_id])
+                self.main()
 
+    # Main 
+    def main(self):
+        self.localization()
+        
+        self.movement()
+        
+        print("\n###############################################")
+        print("gps x                : ", self.measures.x - (self.origin_x - 13))
+        print("movement model x     : ", self.movement_model_x)
+        print("sensors x            : ", self.sensors_x)
+        print("---------------------------------------------")
+        print("gps y                : ", self.measures.y - (self.origin_y - 27))
+        print("movement model y     : ", self.movement_model_y)
+        print("sensors y            : ", self.sensors_y)
+        print("---------------------------------------------")
+        print("compass              : ", self.measures.compass)
+        print("movement model theta : ", math.degrees(self.movement_model_theta))
+        print("###############################################")
+
+    # Calculation of final coordinates
+    def localization(self):
+        self.movementModel()
+        self.nearestDirectionEstimate()
+        self.sensorsCorrection()
+
+    # Calculation of coordinates and theta from movement model
+    def movementModel(self):
+
+        # Local Variables
+        previous_x = self.movement_model_x
+        previous_y = self.movement_model_y
+        previous_theta = self.movement_model_theta
+        previous_out_left = self.current_out_left
+        previous_out_right = self.current_out_right
+
+        # Lin Calculation
+        self.current_out_left = (self.in_left + previous_out_left)/2
+        self.current_out_right = (self.in_right + previous_out_right)/2
+        lin = (self.current_out_left + self.current_out_right)/2
+
+        # Theta Calculation
+        rot = (self.current_out_right - self.current_out_left)/1
+        
+        if abs((previous_theta + rot) + math.radians(self.measures.compass)) == abs((previous_theta + rot)) + abs(math.radians(self.measures.compass)): # Check if both angles have the same sign for mean
+            self.movement_model_theta = ((previous_theta + rot) + math.radians(self.measures.compass))/2 
+        else:
+            self.movement_model_theta = (previous_theta + rot)
+        
+        if self.movement_model_theta < -(math.pi):
+            self.movement_model_theta = -(self.movement_model_theta)
+        elif self.movement_model_theta > math.pi:
+            self.movement_model_theta = -(self.movement_model_theta)
+
+        # Current coordinates
+        self.movement_model_x = previous_x + (lin * math.cos(previous_theta))
+        self.movement_model_y = previous_y + (lin * math.sin(previous_theta))
+
+    # Correction of coordinates from sensors
+    def sensorsCorrection(self):
+        # Local Variables
+        closest_x_wall_coordinate = 0
+        closest_x_wall_distance = 0
+        closest_y_wall_coordinate = 0
+        closest_y_wall_distance = 0
+
+        # In case there is no correction the sensors value is the same as the movement model
+        self.sensors_x = self.movement_model_x
+        self.sensors_y = self.movement_model_y
+        
+        # Direction N
+        if self.closest_direction == "N":
+            # Front correction
+            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 1.4:
+                print("Front correction")
+                closest_x_wall_distance = 1/self.measures.irSensor[0]
+                closest_x_wall_coordinate = round(self.movement_model_x + 1)
+                self.sensors_x = closest_x_wall_coordinate - self.wall_diameter - closest_x_wall_distance - self.robot_radius
+
+            # Back correction
+            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 1.4:
+                print("Back correction")
+                closest_x_wall_distance = 1/self.measures.irSensor[3]
+                closest_x_wall_coordinate = round(self.movement_model_x - 1)
+                self.sensors_x = closest_x_wall_coordinate + self.wall_diameter + closest_x_wall_distance + self.robot_radius
+
+            # Left correction
+            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 1.4:
+                print("Left correction")
+                closest_y_wall_distance = 1/self.measures.irSensor[1]
+                closest_y_wall_coordinate = round(self.movement_model_y + 1)
+                self.sensors_y = closest_y_wall_coordinate - self.wall_diameter - closest_y_wall_distance - self.robot_radius
+
+            # Right correction
+            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 1.4:
+                print("Right correction")
+                closest_y_wall_distance = 1/self.measures.irSensor[2]
+                closest_y_wall_coordinate = round(self.movement_model_y - 1)
+                self.sensors_y = closest_y_wall_coordinate + self.wall_diameter + closest_y_wall_distance + self.robot_radius
+
+        # Direction S
+        if self.closest_direction == "S":
+            # Front correction
+            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 1.4:
+                print("Front correction")
+                closest_x_wall_distance = 1/self.measures.irSensor[0]
+                closest_x_wall_coordinate = round(self.movement_model_x - 1)
+                self.sensors_x = closest_x_wall_coordinate + self.wall_diameter + closest_x_wall_distance + self.robot_radius
+
+            # Back correction
+            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 1.4:
+                print("Back correction")
+                closest_x_wall_distance = 1/self.measures.irSensor[3]
+                closest_x_wall_coordinate = round(self.movement_model_x + 1)
+                self.sensors_x = closest_x_wall_coordinate - self.wall_diameter - closest_x_wall_distance - self.robot_radius
+
+            # Left correction
+            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 1.4:
+                print("Left correction")
+                closest_y_wall_distance = 1/self.measures.irSensor[1]
+                closest_y_wall_coordinate = round(self.movement_model_y - 1)
+                self.sensors_y = closest_y_wall_coordinate + self.wall_diameter + closest_y_wall_distance + self.robot_radius
+
+            # Right correction
+            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 1.4:
+                print("Right correction")
+                closest_y_wall_distance = 1/self.measures.irSensor[2]
+                closest_y_wall_coordinate = round(self.movement_model_y + 1)
+                self.sensors_y = closest_y_wall_coordinate - self.wall_diameter - closest_y_wall_distance - self.robot_radius
+        
+        print("closest_x_wall_coordinate: ", closest_x_wall_coordinate)
+        print("closest_y_wall_coordinate: ", closest_y_wall_coordinate)
+
+    # Robot movement algorithm
+    def movement(self):
+
+        if self.measures.irSensor[0] > 2\
+            or self.measures.irSensor[1]   > 2.7\
+            or self.measures.irSensor[2]  > 2.7:
+            # print("Alto Perigo")
+            if self.measures.irSensor[1] > self.measures.irSensor[2]:
+                self.driveMotorsUpdate(0.15,-0.13)
+            else:
+                self.driveMotorsUpdate(-0.13,0.15)
+
+        elif self.measures.irSensor[0] > 1.1\
+            or self.measures.irSensor[1]   > 2.7\
+            or self.measures.irSensor[2]  > 2.7:
+            # print("Medio Perigo")
+            if self.measures.irSensor[1] > self.measures.irSensor[2]:
+                self.driveMotorsUpdate(0.15, -0.06)
+            else: 
+                self.driveMotorsUpdate(-0.06,0.15)
+
+        elif self.measures.irSensor[0] > 0.6\
+            or self.measures.irSensor[1]   > 2.6\
+            or self.measures.irSensor[2]  > 2.6:
+            # print("Baixo Perigo")
+            if self.measures.irSensor[1] > self.measures.irSensor[2]:
+                self.driveMotorsUpdate(0.15,0.08)
+            else: 
+                self.driveMotorsUpdate(0.08,0.15)
+
+        elif self.measures.irSensor[0] > 0.5\
+            or self.measures.irSensor[1]   > 2.1\
+            or self.measures.irSensor[2]  > 2.1:
+            # print("Sem Perigo")
+            if self.measures.irSensor[1] > self.measures.irSensor[2]:
+                self.driveMotorsUpdate(0.15,0.145)
+            else:
+                self.driveMotorsUpdate(0.145,0.15)
+        
+        else:
+            self.driveMotorsUpdate(0.15,0.15)
+
+    # Drive Motors and aand updating the power input variables for the movement model
+    def driveMotorsUpdate(self, in_left, in_right):
+        self.in_left = in_left
+        self.in_right = in_right
+        self.driveMotors(self.in_left , self.in_right)
+
+    # Nearest direction estimate
+    def nearestDirectionEstimate(self):
+        ls = [0,90,180,-180,-90]
+        closest_direction_val = min(ls, key=lambda x:abs(x-math.degrees(self.movement_model_theta)))
+        # print("closest_direction_val: ", closest_direction_val)
+        if closest_direction_val == 0:
+            self.closest_direction = "N"
+        elif closest_direction_val == 90:
+            self.closest_direction = "W"
+        elif closest_direction_val == 180 or closest_direction_val == -180:
+            self.closest_direction = "S"
+        elif closest_direction_val == -90:
+            self.closest_direction = "E"
+        print("closest direction: ", self.closest_direction)
+
+    # Writing output files
+    def writeOutputFiles(self):
         with open(outfilemap, 'w') as out:
             out.write("map")
             out.write('\n')
@@ -80,57 +289,6 @@ class MyRob(CRobLinkAngs):
         with open(outfilepath, 'w') as out:
             out.write("path")
             out.write('\n')
-
-        # Contagem Voltas
-        if (self.flag == 2) and (self.measures.ground == 0):
-            self.flag = 0
-            self.lap = self.lap + 1
-            
-        if(self.measures.ground == 2):
-            self.flag = 2
-
-        # Alto Perigo
-        if self.measures.irSensor[center_id] > 2\
-            or self.measures.irSensor[left_id]   > 2.7\
-            or self.measures.irSensor[right_id]  > 2.7:
-            print("Alto Perigo")
-            if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
-                self.driveMotors(0.15,-0.13)
-            else:
-                self.driveMotors(-0.13,0.15)
-
-        # Medio Perigo
-        elif self.measures.irSensor[center_id] > 1.1\
-            or self.measures.irSensor[left_id]   > 2.7\
-            or self.measures.irSensor[right_id]  > 2.7:
-            print("Medio Perigo")
-            if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
-                self.driveMotors(0.15, -0.06)
-            else: 
-                self.driveMotors(-0.06,0.15)
-
-        # Baixo Perigo
-        elif self.measures.irSensor[center_id] > 0.6\
-            or self.measures.irSensor[left_id]   > 2.6\
-            or self.measures.irSensor[right_id]  > 2.6:
-            print("Baixo Perigo")
-            if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
-                self.driveMotors(0.15,0.08)
-            else: 
-                self.driveMotors(0.08,0.15)
-
-        # Sem perigo
-        elif self.measures.irSensor[center_id] > 0.5\
-            or self.measures.irSensor[left_id]   > 2.1\
-            or self.measures.irSensor[right_id]  > 2.1:
-            print("Sem Perigo")
-            if self.measures.irSensor[left_id] > self.measures.irSensor[right_id]:
-                self.driveMotors(0.15,0.145)
-            else:
-                self.driveMotors(0.145,0.15)
-        
-        else:
-            self.driveMotors(0.15,0.15)
 
 class Map():
     def __init__(self, filename):
