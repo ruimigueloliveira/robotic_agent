@@ -299,44 +299,46 @@ class MyRob(CRobLinkAngs):
     # Robot movement algorithm
     def movement(self):
 
-        if self.measures.irSensor[0] > 2\
-            or self.measures.irSensor[1]   > 2.7\
-            or self.measures.irSensor[2]  > 2.7:
-            # print("Alto Perigo")
-            if self.measures.irSensor[1] > self.measures.irSensor[2]:
-                self.driveMotorsUpdate(0.15,-0.13)
-            else:
-                self.driveMotorsUpdate(-0.13,0.15)
+        # if self.measures.irSensor[0] > 2\
+        #     or self.measures.irSensor[1]   > 2.7\
+        #     or self.measures.irSensor[2]  > 2.7:
+        #     # print("Alto Perigo")
+        #     if self.measures.irSensor[1] > self.measures.irSensor[2]:
+        #         self.driveMotorsUpdate(0.15,-0.13)
+        #     else:
+        #         self.driveMotorsUpdate(-0.13,0.15)
 
-        elif self.measures.irSensor[0] > 1.1\
-            or self.measures.irSensor[1]   > 2.7\
-            or self.measures.irSensor[2]  > 2.7:
-            # print("Medio Perigo")
-            if self.measures.irSensor[1] > self.measures.irSensor[2]:
-                self.driveMotorsUpdate(0.15, -0.06)
-            else: 
-                self.driveMotorsUpdate(-0.06,0.15)
+        # elif self.measures.irSensor[0] > 1.1\
+        #     or self.measures.irSensor[1]   > 2.7\
+        #     or self.measures.irSensor[2]  > 2.7:
+        #     # print("Medio Perigo")
+        #     if self.measures.irSensor[1] > self.measures.irSensor[2]:
+        #         self.driveMotorsUpdate(0.15, -0.06)
+        #     else: 
+        #         self.driveMotorsUpdate(-0.06,0.15)
 
-        elif self.measures.irSensor[0] > 0.6\
-            or self.measures.irSensor[1]   > 2.6\
-            or self.measures.irSensor[2]  > 2.6:
-            # print("Baixo Perigo")
-            if self.measures.irSensor[1] > self.measures.irSensor[2]:
-                self.driveMotorsUpdate(0.15,0.08)
-            else: 
-                self.driveMotorsUpdate(0.08,0.15)
+        # elif self.measures.irSensor[0] > 0.6\
+        #     or self.measures.irSensor[1]   > 2.6\
+        #     or self.measures.irSensor[2]  > 2.6:
+        #     # print("Baixo Perigo")
+        #     if self.measures.irSensor[1] > self.measures.irSensor[2]:
+        #         self.driveMotorsUpdate(0.15,0.08)
+        #     else: 
+        #         self.driveMotorsUpdate(0.08,0.15)
 
-        elif self.measures.irSensor[0] > 0.5\
-            or self.measures.irSensor[1]   > 2.1\
-            or self.measures.irSensor[2]  > 2.1:
-            # print("Sem Perigo")
-            if self.measures.irSensor[1] > self.measures.irSensor[2]:
-                self.driveMotorsUpdate(0.15,0.145)
-            else:
-                self.driveMotorsUpdate(0.145,0.15)
+        # elif self.measures.irSensor[0] > 0.5\
+        #     or self.measures.irSensor[1]   > 2.1\
+        #     or self.measures.irSensor[2]  > 2.1:
+        #     # print("Sem Perigo")
+        #     if self.measures.irSensor[1] > self.measures.irSensor[2]:
+        #         self.driveMotorsUpdate(0.15,0.145)
+        #     else:
+        #         self.driveMotorsUpdate(0.145,0.15)
         
-        else:
-            self.driveMotorsUpdate(0.15,0.15)
+        # else:
+        #     self.driveMotorsUpdate(0.15,0.15)
+
+        self.driveMotorsUpdate(-0.15,0.15)
 
     # Drive Motors and aand updating the power input variables for the movement model
     def driveMotorsUpdate(self, in_left, in_right):
@@ -421,7 +423,7 @@ for i in range(1, len(sys.argv),2):
         quit()
 
 if __name__ == '__main__':
-    rob=MyRob(rob_name,pos,[0.0,60.0,-60.0,180.0],host)
+    rob=MyRob(rob_name,pos,[0.0,90.0,-90.0,180.0],host)
     if mapc != None:
         rob.setMap(mapc.labMap)
         rob.printMap()
