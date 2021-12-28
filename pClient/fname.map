@@ -11,15 +11,15 @@
                          - - - - - - - - - - - - - -   
                         |XXXXXXX|XXXXXXXXX|XXXXXXXXX|  
                          - - X - X - - - X X - - - X   
-                        |XXIXXXXXX|     |X|XXXX   XX|  
-                         X - - - X       X - X -   X   
-                        |XXX|           |XXX|XXX| XX|  
-                         - X             - X - X   X   
-                          |X|             |XXXXX| XX|  
-                         - X               - X X   X   
-                        |XXX|                     XX|  
-                         X -   - - - X             X   
-                        |X|   |XXXXXXX|           XX|  
+                        |XXIXXXXXX|XXXXX|X|XXXX   XX|  
+                         X - - - X X - - X - X -   X   
+                        |XXX|XXX|XXX|XXX|XXX|XXX| XX|  
+                         - X X - X - X X - X - X   X   
+                          |X|XXXXX|XXX|X| |XXXXX| XX|  
+                         - X - - - X - X X - X X   X   
+                        |XXX|XXXXXXX| |X|XXXXX|   XX|  
+                         X - X - - - X X X - -     X   
+                        |X|X|X|XXXXXXX|XXX|       XX|  
                          X X X X - - X - - X - - - X   
                         |XXXXXXXXXXX|XXXXXXXXXXXXXXX|  
                          - - - - - - - - - - - - - -   

@@ -108,7 +108,6 @@ class MyRob(CRobLinkAngs):
 
     # Main function       
     def main(self):
-        print("time: ", self.measures.time)
         self.writeOutputFiles()
         self.localization()
 
@@ -141,7 +140,7 @@ class MyRob(CRobLinkAngs):
         difBetWeenTarget = 0
         difToCellCenter = 0
         inX = 0.000
-        inY = 0.090
+        inY = 0.150
 
         if self.direcao == "North" or self.direcao == "South":
             difBetWeenTarget = abs((self.xpontoatual) - (self.xorigemtransformada))
@@ -154,23 +153,17 @@ class MyRob(CRobLinkAngs):
         print("difBetWeenTarget: ", difBetWeenTarget)
         print("difToCellCenter: ", difToCellCenter)
 
-        if difToCellCenter > 0.12:
-            inX = 0.078
-        elif difToCellCenter > 0.09:
-            inX = 0.081
-        elif difToCellCenter > 0.04:
-            inX = 0.085
-        elif difToCellCenter > 0.02:
-            inX = 0.087
+        if difToCellCenter >= 0.2:
+            inX = 0.130
+        elif difToCellCenter >= 0.1:
+            inX = 0.140
         else:
-            inX = 0.089
+            inX = 0.145
         
-        if (difBetWeenTarget) < 0.02:
-            self.driveMotorsUpdate(inX/20,inY/20)
-        elif (difBetWeenTarget) < 0.1:
-            self.driveMotorsUpdate(inX/10,inY/10)
-        elif (difBetWeenTarget) < 0.5:
-            self.driveMotorsUpdate(inX/5,inY/5)
+        if difBetWeenTarget <= 0.1:
+            self.driveMotorsUpdate(inX/30,inY/30)
+        elif difBetWeenTarget <= 0.3:
+            self.driveMotorsUpdate(inX/15,inY/15)
         else:
             self.driveMotorsUpdate(inX,inY)
 
@@ -179,7 +172,7 @@ class MyRob(CRobLinkAngs):
 
         difBetWeenTarget = 0
         difToCellCenter = 0
-        inX = 0.090
+        inX = 0.150
         inY = 0.000
 
         if self.direcao == "North" or self.direcao == "South":
@@ -193,29 +186,26 @@ class MyRob(CRobLinkAngs):
         print("difBetWeenTarget: ", difBetWeenTarget)
         print("difToCellCenter: ", difToCellCenter)
 
-        if difToCellCenter > 0.12:
-            inY = 0.078
-        elif difToCellCenter > 0.09:
-            inY = 0.081
-        elif difToCellCenter > 0.04:
-            inY = 0.085
-        elif difToCellCenter > 0.02:
-            inY = 0.087
+        if difToCellCenter >= 0.2:
+            inY = 0.130
+        elif difToCellCenter >= 0.1:
+            inY = 0.140
         else:
-            inY = 0.089
+            inY = 0.145
         
-        if (difBetWeenTarget) < 0.02:
-            self.driveMotorsUpdate(inX/20,inY/20)
-        elif (difBetWeenTarget) < 0.1:
-            self.driveMotorsUpdate(inX/10,inY/10)
-        elif (difBetWeenTarget) < 0.5:
-            self.driveMotorsUpdate(inX/5,inY/5)
+        if difBetWeenTarget <= 0.1:
+            self.driveMotorsUpdate(inX/30,inY/30)
+        elif difBetWeenTarget <= 0.3:
+            self.driveMotorsUpdate(inX/15,inY/15)
         else:
             self.driveMotorsUpdate(inX,inY)
 
     # Robot movement when it needs to go forward
     def auxGoFront(self):
 
+        inX = 0.150
+        inY = 0.150
+        
         dif = 0
         if self.direcao == "North" or self.direcao == "South":
             dif = abs((self.xpontoatual) - (self.xorigemtransformada))
@@ -223,18 +213,15 @@ class MyRob(CRobLinkAngs):
             dif = abs((self.ypontoatual) - (self.yorigemtransformada))
         print("go front")
         print("la difrenca: ", dif)
-        if (dif) < 0.02:
-            print("1")
-            self.driveMotorsUpdate(0.15/20,0.15/20)
-        elif (dif) < 0.1:
+        if (dif) <= 0.1:
             print("2")
-            self.driveMotorsUpdate(0.15/10,0.15/10)
-        elif (dif) < 0.5:
+            self.driveMotorsUpdate(inX/30,inY/30)
+        elif (dif) <= 0.3:
             print("3")
-            self.driveMotorsUpdate(0.15/5,0.15/5)
+            self.driveMotorsUpdate(inX/15,inY/15)
         else:
             print("4")
-            self.driveMotorsUpdate(0.15,0.15)
+            self.driveMotorsUpdate(inX,inY)
 
     # Robot movement when it needs to go backwards
     def auxGoBack(self):
@@ -242,6 +229,80 @@ class MyRob(CRobLinkAngs):
         print("ja passei")
         print("go back")
         self.driveMotorsUpdate(-0.002,-0.002)
+
+    # Robot movement when it needs to rotate North
+    def auxRotateNorth(self):
+        if self.myCompass >= -180 and self.myCompass < 0:
+            if self.myCompass >= 0-5:
+                self.driveMotorsUpdate(-0.001, 0.001)
+            elif self.myCompass >= 0-35:
+                self.driveMotorsUpdate(-0.010, 0.010)
+            else:
+                self.driveMotorsUpdate(-0.150, 0.150)
+        elif self.myCompass <= 180 and self.myCompass > 0:
+            if self.myCompass <= 0+5:
+                self.driveMotorsUpdate(0.001, -0.001)
+            elif self.myCompass <= 0+35:
+                self.driveMotorsUpdate(0.010, -0.010)
+            else:
+                self.driveMotorsUpdate(0.150, -0.150)
+
+    # Robot movement when it needs to rotate West
+    def auxRotateWest(self):
+        if self.myCompass >= -180 and self.myCompass < 90:
+            if self.myCompass >= 90-5:
+                self.driveMotorsUpdate(-0.001, 0.001)
+            elif self.myCompass >= 90-35:
+                self.driveMotorsUpdate(-0.010, 0.010)
+            else:
+                self.driveMotorsUpdate(-0.150, 0.150)
+        elif self.myCompass <= 180 and self.myCompass > 90:
+            if self.myCompass <= 90+5:
+                self.driveMotorsUpdate(0.001, -0.001)
+            elif self.myCompass <= 90+35:
+                self.driveMotorsUpdate(0.010, -0.010)
+            else:
+                self.driveMotorsUpdate(0.150, -0.150)
+        else:
+            self.driveMotorsUpdate(-0.150, 0.150)
+    
+    # Robot movement when it needs to rotate South
+    def auxRotateSouth(self):
+        if self.myCompass >= 0 and self.myCompass < 180:
+            if self.myCompass >= 180-5:
+                self.driveMotorsUpdate(-0.001, 0.001)
+            elif self.myCompass >= 180-35:
+                self.driveMotorsUpdate(-0.010, 0.010)
+            else:
+                self.driveMotorsUpdate(-0.150, 0.150)
+        elif self.myCompass <= 0 and self.myCompass > -180:
+            if self.myCompass <= -180+5:
+                self.driveMotorsUpdate(0.001, -0.001)
+            elif self.myCompass <= -180+35:
+                self.driveMotorsUpdate(0.010, -0.010)
+            else:
+                self.driveMotorsUpdate(0.150, -0.150)
+        else:
+            self.driveMotorsUpdate(-0.150, 0.150)
+
+    # Robot movement when it needs to rotate East
+    def auxRotateEast(self):
+        if self.myCompass >= -180 and self.myCompass < -90:
+            if self.myCompass >= -90-5:
+                self.driveMotorsUpdate(-0.001, 0.001)
+            elif self.myCompass >= -90-35:
+                self.driveMotorsUpdate(-0.010, 0.010)
+            else:
+                self.driveMotorsUpdate(-0.150, 0.150)
+        elif self.myCompass <= 180 and self.myCompass > -90:
+            if self.myCompass <= -90+5:
+                self.driveMotorsUpdate(0.001, -0.001)
+            elif self.myCompass <= -90+35:
+                self.driveMotorsUpdate(0.010, -0.010)
+            else:
+                self.driveMotorsUpdate(0.150, -0.150)
+        else:
+            self.driveMotorsUpdate(0.150, -0.150)
 
     # Main function when the compass is 0
     def goingNorth(self):
@@ -253,23 +314,13 @@ class MyRob(CRobLinkAngs):
             print("rodando")
 
             if self.proximadirecao == "East":
-                
                 if self.myCompass == -90:
                     self.direcao = "East"
                     self.proximadirecao = ""
                     self.rodando = False
                     self.yorigemmatriz = self.yorigemmatriz - 2
                 else:
-                    if (self.myCompass < 0) and (self.myCompass >= -40):
-                        self.driveMotorsUpdate(0.15, -0.15)
-                    elif (self.myCompass < -40) and (self.myCompass >= -70):
-                        self.driveMotorsUpdate(0.04, -0.04)
-                    elif (self.myCompass < -70) and (self.myCompass >= -80):
-                        self.driveMotorsUpdate(0.02, -0.02)
-                    elif (self.myCompass < -80) and (self.myCompass > -90):
-                        self.driveMotorsUpdate(0.001, -0.001)
-                    else:
-                        self.driveMotorsUpdate(0.15, -0.15)
+                    self.auxRotateEast()
 
             elif self.proximadirecao == "West":
                 if self.myCompass == 90:
@@ -278,16 +329,7 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.yorigemmatriz = self.yorigemmatriz - 2
                 else:
-                    if (self.myCompass > 0) and (self.myCompass <= 40):
-                        self.driveMotorsUpdate(-0.15, 0.15)
-                    elif (self.myCompass > 40) and (self.myCompass <= 70):
-                        self.driveMotorsUpdate(-0.04, 0.04)
-                    elif (self.myCompass > 70) and (self.myCompass <= 80):
-                        self.driveMotorsUpdate(-0.02, 0.02)
-                    elif (self.myCompass > 80) and (self.myCompass < 90):
-                        self.driveMotorsUpdate(-0.001, 0.001)
-                    else:
-                        self.driveMotorsUpdate(-0.15, 0.15)
+                    self.auxRotateWest()
 
             elif self.proximadirecao == "South":
                 if (self.myCompass == 180) or ((self.myCompass == -180)):
@@ -296,17 +338,8 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.yorigemmatriz = self.yorigemmatriz - 2
                 else:
-                    if (self.myCompass > 0) and (self.myCompass <= 130):
-                        self.driveMotorsUpdate(-0.15, 0.15)
-                    elif (self.myCompass > 130) and (self.myCompass <= 160):
-                        self.driveMotorsUpdate(-0.04, 0.04)
-                    elif (self.myCompass > 160) and (self.myCompass <= 170):
-                        self.driveMotorsUpdate(-0.02, 0.02)
-                    elif (self.myCompass > 170) and (self.myCompass < 180):
-                        self.driveMotorsUpdate(-0.001, 0.001)
-                    else:
-                        self.driveMotorsUpdate(-0.15, 0.15)
-        
+                    self.auxRotateSouth()
+    
         elif (self.xpontoatual) == (self.xorigemtransformada):
             
             if self.myCompass == 0:
@@ -404,35 +437,16 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.xorigemmatriz = self.xorigemmatriz + 2
                 else:
-                    if (self.myCompass > 90) and (self.myCompass <= 130):
-                        self.driveMotorsUpdate(-0.15, 0.15)
-                    elif (self.myCompass > 130) and (self.myCompass <= 160):
-                        self.driveMotorsUpdate(-0.04, 0.04)
-                    elif (self.myCompass > 160) and (self.myCompass <= 170):
-                        self.driveMotorsUpdate(-0.02, 0.02)
-                    elif (self.myCompass > 170) and (self.myCompass < 180):
-                        self.driveMotorsUpdate(-0.001, 0.001)
-                    else:
-                        self.driveMotorsUpdate(-0.15, 0.15)
+                    self.auxRotateSouth()
                         
-            elif self.proximadirecao == "North":
-                
+            elif self.proximadirecao == "North":        
                 if self.myCompass == 0:
                     self.direcao = "North"
                     self.proximadirecao = ""
                     self.rodando = False
                     self.xorigemmatriz = self.xorigemmatriz + 2
                 else:
-                    if (self.myCompass > 50) and (self.myCompass <= 90):
-                        self.driveMotorsUpdate(0.15, -0.15)
-                    elif (self.myCompass > 20) and (self.myCompass <= 50):
-                        self.driveMotorsUpdate(0.04, -0.04)
-                    elif (self.myCompass > 10) and (self.myCompass <= 20):
-                        self.driveMotorsUpdate(0.02, -0.02)
-                    elif (self.myCompass > 0) and (self.myCompass <= 10):
-                        self.driveMotorsUpdate(0.001, -0.001)
-                    else:
-                        self.driveMotorsUpdate(0.15, -0.15)
+                    self.auxRotateNorth()
             
             elif self.proximadirecao == "East":
                 if self.myCompass == -90:
@@ -441,18 +455,7 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.xorigemmatriz = self.xorigemmatriz + 2
                 else:
-                    if(self.myCompass >= 0):
-                        self.driveMotorsUpdate(0.15, -0.15)
-                    elif (self.myCompass < 0) and (self.myCompass >= -40):
-                        self.driveMotorsUpdate(0.15, -0.15)
-                    elif (self.myCompass < -40) and (self.myCompass >= -70):
-                        self.driveMotorsUpdate(0.04, -0.04)
-                    elif (self.myCompass < -70) and (self.myCompass >= -80):
-                        self.driveMotorsUpdate(0.02, -0.02)
-                    elif (self.myCompass < -80) and (self.myCompass > -90):
-                        self.driveMotorsUpdate(0.001, -0.001)
-                    else:
-                        self.driveMotorsUpdate(0.15, -0.15)
+                    self.auxRotateEast()
 
         elif (self.ypontoatual) == (self.yorigemtransformada):
 
@@ -551,16 +554,7 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.yorigemmatriz = self.yorigemmatriz + 2
                 else:
-                    if (self.myCompass < 180) and (self.myCompass >= 140):
-                        self.driveMotorsUpdate(0.15, -0.15)
-                    elif (self.myCompass < 140) and (self.myCompass >= 110):
-                        self.driveMotorsUpdate(0.04, -0.04)
-                    elif (self.myCompass < 110) and (self.myCompass >= 100):
-                        self.driveMotorsUpdate(0.02, -0.02)
-                    elif (self.myCompass < 100) and (self.myCompass > 90):
-                        self.driveMotorsUpdate(0.001, -0.001)
-                    else:
-                        self.driveMotorsUpdate(0.15, -0.15)
+                    self.auxRotateWest()
 
             elif self.proximadirecao == "East":
                 if self.myCompass == -90:
@@ -569,35 +563,16 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.yorigemmatriz = self.yorigemmatriz + 2
                 else:
-                    if (self.myCompass < -140) and (self.myCompass >= -180):
-                        self.driveMotorsUpdate(-0.15, 0.15)
-                    elif (self.myCompass < -110) and (self.myCompass >= -140):
-                        self.driveMotorsUpdate(-0.04, 0.04)
-                    elif (self.myCompass < -100) and (self.myCompass >= -110):
-                        self.driveMotorsUpdate(-0.02, 0.02)
-                    elif (self.myCompass < -90) and (self.myCompass > -100):
-                        self.driveMotorsUpdate(-0.001, 0.001)
-                    else:
-                        self.driveMotorsUpdate(-0.15, 0.15)
+                    self.auxRotateEast()
             
             elif self.proximadirecao == "North":
-                
                 if self.myCompass == 0:
                     self.direcao = "North"
                     self.proximadirecao = ""
                     self.rodando = False
                     self.yorigemmatriz = self.yorigemmatriz + 2
                 else:
-                    if (self.myCompass > 50) and (self.myCompass <= 180):
-                        self.driveMotorsUpdate(0.15, -0.15)
-                    elif (self.myCompass > 20) and (self.myCompass <= 50):
-                        self.driveMotorsUpdate(0.04, -0.04)
-                    elif (self.myCompass > 10) and (self.myCompass <= 20):
-                        self.driveMotorsUpdate(0.02, -0.02)
-                    elif (self.myCompass > 0) and (self.myCompass <= 10):
-                        self.driveMotorsUpdate(0.001, -0.001)
-                    else:
-                        self.driveMotorsUpdate(0.15, -0.15)
+                    self.auxRotateNorth()
 
         elif (self.xpontoatual) == (self.xorigemtransformada):
             
@@ -697,16 +672,7 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.xorigemmatriz = self.xorigemmatriz - 2
                 else:
-                    if (self.myCompass > -90) and (self.myCompass <= -50):
-                        self.driveMotorsUpdate(-0.15, 0.15)
-                    elif (self.myCompass > -50) and (self.myCompass <= -20):
-                        self.driveMotorsUpdate(-0.04, 0.04)
-                    elif (self.myCompass > -20) and (self.myCompass <= -10):
-                        self.driveMotorsUpdate(-0.02, 0.02)
-                    elif (self.myCompass > -10) and (self.myCompass < 0):
-                        self.driveMotorsUpdate(-0.001, 0.001)
-                    else:
-                        self.driveMotorsUpdate(-0.15, 0.15)
+                    self.auxRotateNorth()
 
             elif self.proximadirecao == "South":
                 if (self.myCompass == -180) or (self.myCompass == 180):
@@ -715,17 +681,8 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.xorigemmatriz = self.xorigemmatriz - 2
                 else:
-                    if (self.myCompass < -90) and (self.myCompass >= -130):
-                        self.driveMotorsUpdate(0.15, -0.15)
-                    elif (self.myCompass < -130) and (self.myCompass >= -160):
-                        self.driveMotorsUpdate(0.04, -0.04)
-                    elif (self.myCompass < -160) and (self.myCompass >= -170):
-                        self.driveMotorsUpdate(0.02, -0.02)
-                    elif (self.myCompass < -170) and (self.myCompass >= -180):
-                        self.driveMotorsUpdate(0.001, -0.001)
-                    else:
-                        self.driveMotorsUpdate(0.15, -0.15)
-
+                    self.auxRotateSouth()
+                    
             elif self.proximadirecao == "West":
                 if self.myCompass == 90:
                     self.direcao = "West"
@@ -733,18 +690,7 @@ class MyRob(CRobLinkAngs):
                     self.rodando = False
                     self.xorigemmatriz = self.xorigemmatriz - 2
                 else:
-                    if(self.myCompass <= 0):
-                        self.driveMotorsUpdate(0.15, -0.15)
-                    elif (self.myCompass > 0) and (self.myCompass <= 40):
-                        self.driveMotorsUpdate(0.15, -0.15)
-                    elif (self.myCompass > 40) and (self.myCompass <= 70):
-                        self.driveMotorsUpdate(0.04, -0.04)
-                    elif (self.myCompass > 70) and (self.myCompass <= 80):
-                        self.driveMotorsUpdate(0.02, -0.02)
-                    elif (self.myCompass > 80) and (self.myCompass < 90):
-                        self.driveMotorsUpdate(0.001, -0.001)
-                    else:
-                        self.driveMotorsUpdate(0.15, -0.15)
+                    self.auxRotateWest()
 
         elif (self.ypontoatual) == (self.yorigemtransformada):
             
@@ -1112,8 +1058,8 @@ class MyRob(CRobLinkAngs):
         self.media_y = self.movement_model_y
 
         self.myCompass = round(math.degrees(self.movement_model_theta))
-        self.xpontoatual = round(self.media_x,2)
-        self.ypontoatual = round(self.media_y,2)
+        self.xpontoatual = round(self.media_x,1)
+        self.ypontoatual = round(self.media_y,1)
 
     # Calculation of coordinates and theta from movement model
     def movementModel(self):
