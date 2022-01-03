@@ -3,6 +3,7 @@ from croblink import *
 from math import *
 import xml.etree.ElementTree as ET
 import math
+import pathfinder
 
 CELLROWS=7
 CELLCOLS=14
@@ -23,7 +24,6 @@ class MyRob(CRobLinkAngs):
     nosvisitados = []
     xorigemtransformada = 13
     yorigemtransformada = 27
-
     closest_direction = "N"
     start = False
     in_left = 0
@@ -34,6 +34,8 @@ class MyRob(CRobLinkAngs):
     movement_model_y = 27
     media_x = 13
     media_y = 27
+    xpontoatual = 13
+    ypontoatual = 27
     previous_theta = 0
     movement_model_theta = 0
     origin_x = 0
@@ -69,12 +71,18 @@ class MyRob(CRobLinkAngs):
 
             if self.start == False:
                 self.start = True
+                
+                # Output file oh the map
                 rows, colums = 55, 27
                 self.matrix = [[" " for x in range(rows)] for y in range(colums)]
                 self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "I"
-                self.evaluateNorth((self.media_x,self.media_y))
+                
+                # Astar Maze
                 rows, colums = 55, 27
                 self.astar_maze = [[1 for x in range(rows)] for y in range(colums)]
+                
+                # Evaluation of the surroundings at the beginning to not to call the checkend function
+                self.evaluateNorth()
                 
             if self.measures.endLed:
                 print(self.robName + " exiting")
@@ -116,14 +124,14 @@ class MyRob(CRobLinkAngs):
         self.writeOutputFiles()
         self.localization()
 
-        print("\nfront: ", self.measures.irSensor[0])
-        print("left: ", self.measures.irSensor[1])
-        print("right: ", self.measures.irSensor[2])
-        print("back: ", self.measures.irSensor[3])
-        print("\nx   : ", self.xpontoatual)
-        print("y   : ", self.ypontoatual)
-        print("compass : ", self.myCompass)
-        print("\n")
+        # print("\nfront: ", self.measures.irSensor[0])
+        # print("left: ", self.measures.irSensor[1])
+        # print("right: ", self.measures.irSensor[2])
+        # print("back: ", self.measures.irSensor[3])
+        # print("\nx   : ", self.xpontoatual)
+        # print("y   : ", self.ypontoatual)
+        # print("compass : ", self.myCompass)
+        # print("\n")
 
         if self.direcao == "North":
             self.goingNorth()
@@ -133,11 +141,10 @@ class MyRob(CRobLinkAngs):
             self.goingSouth()
         elif self.direcao == "East":
             self.goingEast()
-            
+
+        self.printAstarMaze()    
         self.checkEnd()
-
-        self.printAstarMaze()
-
+        
         print("########################################################################")
     
     # Robot movement when it needs to deviate to its left
@@ -159,9 +166,13 @@ class MyRob(CRobLinkAngs):
         print("difBetWeenTarget: ", difBetWeenTarget)
         print("difToCellCenter: ", difToCellCenter)
 
-        if difToCellCenter >= 0.2:
-            inX = 0.133
-        elif difToCellCenter >= 0.1:
+        if  difToCellCenter >= 0.30:
+            inX = 0.120
+        elif  difToCellCenter >= 0.20:
+            inX = 0.130
+        elif difToCellCenter >= 0.15:
+            inX = 0.135
+        elif difToCellCenter >= 0.10:
             inX = 0.140
         elif difToCellCenter >= 0.05:
             inX = 0.145
@@ -192,9 +203,13 @@ class MyRob(CRobLinkAngs):
         print("difBetWeenTarget: ", difBetWeenTarget)
         print("difToCellCenter: ", difToCellCenter)
 
-        if difToCellCenter >= 0.2:
-            inY = 0.133
-        elif difToCellCenter >= 0.1:
+        if  difToCellCenter >= 0.30:
+            inY = 0.120
+        elif  difToCellCenter >= 0.20:
+            inY = 0.130
+        elif difToCellCenter >= 0.15:
+            inY = 0.135
+        elif difToCellCenter >= 0.10:
             inY = 0.140
         elif difToCellCenter >= 0.05:
             inY = 0.145
@@ -309,7 +324,7 @@ class MyRob(CRobLinkAngs):
     # Main function when the compass is 0
     def goingNorth(self):
 
-        print("going N")
+        # print("going N")
         print("transformda: ", self.xorigemtransformada)
 
         if self.rodando == True:
@@ -351,58 +366,59 @@ class MyRob(CRobLinkAngs):
                 yround = round(self.ypontoatual)
                 self.evaluateNorth((xround, yround))
                 self.drawMapNorth()
+                self.drawAstarMazeNorth((xround, yround))
 
-                # Left
-                if (self.nosparavisitar.count((xround,yround+2)) > 0) and (self.measures.irSensor[self.left_id] < 1.2):
-                    print("WEST por visitar")
-                    self.rodando = True
-                    self.proximadirecao = "West"  
-                
-                # Center 
-                elif (self.nosparavisitar.count((xround+2,yround)) > 0) and (self.measures.irSensor[self.center_id] < 1.2):
-                    print("NORTH por visitar")
-                    self.proximadirecao = "North"
-                    self.xorigemtransformada = self.xorigemtransformada + 2
+                start = (xround, yround)
+                # print("start: ", start)
 
-                # Right
-                elif (self.nosparavisitar.count((xround,yround-2)) > 0) and (self.measures.irSensor[self.right_id] < 1.2):
-                    self.rodando = True
-                    print("EAST por visitar")
-                    self.proximadirecao = "East"
+                end = ()
+                minlen = 27* 55
+                end = 0
+                for i in self.nosparavisitar:
+                    path = pathfinder.search(self.astar_maze, 1, start, i)
+                    if len(path) < minlen:
+                        minlen = len(path)
+                        end = i
 
-                # Back
-                elif (self.nosparavisitar.count((xround-2,yround)) > 0) and (self.measures.irSensor[self.back_id] < 1.2):
-                    self.rodando = True
-                    print("SOUTH por visitar")
-                    self.proximadirecao = "South"
-                
-                # In case all surrounding positions have already been visited
-                else:
-                    print("NORTH POR EXCLUSAO")
+                # print("end: ", end)
 
-                    # Center
-                    if self.measures.irSensor[self.center_id] < 1.2:
-                        print("vou em frente - North")
+                path = pathfinder.search(self.astar_maze, 1, start, end)
+                # print("path: ", path)
+
+                pontoatual = path[0]
+                pontoseguinte = path[1]
+                print("ponto 0: ", pontoatual)
+                print("ponto 1: ", pontoseguinte)
+
+                x1 = pontoatual[0]
+                x2 = pontoseguinte[0]
+                y1 = pontoatual[1]
+                y2 = pontoseguinte[1]
+
+                if x1 == x2:
+                    print("vou andar nos eixos nos y")
+                    if y1 > y2:
+                        print("vou para east")
+                        self.rodando = True
+                        self.proximadirecao = "East"
+                    else:
+                        print("vou para west")
+                        self.rodando = True
+                        self.proximadirecao = "West"
+
+                if y1 == y2:
+                    print("vou andar nos eixos nos x")
+                    if x1 > x2:
+                        print("vou para south")
+                        self.rodando = True
+                        self.proximadirecao = "South"
+                    else:
+                        print("vou para north")
                         self.proximadirecao = "North"
                         self.xorigemtransformada = self.xorigemtransformada + 2
 
-                    # Left
-                    elif self.measures.irSensor[self.left_id] < 1.2:
-                        print("vou esquerda - West")
-                        self.rodando = True
-                        self.proximadirecao = "West"
-                    
-                    # Right
-                    elif self.measures.irSensor[self.right_id] < 1.2:
-                        print("vou direita - East")
-                        self.rodando = True
-                        self.proximadirecao = "East"
-                    
-                    # Back
-                    elif self.measures.irSensor[self.back_id] < 1.2:
-                        print("vou tras - South")
-                        self.rodando = True
-                        self.proximadirecao = "South"
+
+                self.yorigemmatriz = self.yorigemmatriz + 2
 
             else:
                 if self.myCompass > 0:
@@ -533,6 +549,8 @@ class MyRob(CRobLinkAngs):
                         self.rodando = True
                         self.proximadirecao = "East"
             
+                self.xorigemmatriz = self.xorigemmatriz - 2
+
             else:
                 if self.myCompass > 90:
                     self.driveMotorsUpdate(0.01, -0.01)
@@ -662,6 +680,8 @@ class MyRob(CRobLinkAngs):
                         self.rodando = True
                         self.proximadirecao = "North"
 
+                self.yorigemmatriz = self.yorigemmatriz - 2
+
             else:
                 if (self.myCompass < 0) and (self.myCompass > -180):
                     self.driveMotorsUpdate(0.01, -0.01)
@@ -790,7 +810,9 @@ class MyRob(CRobLinkAngs):
                         print("vou tras - West")
                         self.rodando = True
                         self.proximadirecao = "West"
-            
+
+                self.xorigemmatriz = self.xorigemmatriz + 2
+
             else:
                 if self.myCompass > -90:
                     self.driveMotorsUpdate(0.01, -0.01)
@@ -829,9 +851,9 @@ class MyRob(CRobLinkAngs):
         if self.nosvisitados.count(point) == 0:
             self.nosvisitados.append(point)
 
-        if self.measures.irSensor[self.back_id] < 1.2:
-            if self.nosvisitados.count((point[0]-2, point[1])) == 0:
-                self.nosparavisitar.append((point[0]-2, point[1]))
+        if(self.measures.irSensor[self.left_id] < 1.2):
+            if self.nosvisitados.count((point[0], point[1]+2)) == 0:
+                self.nosparavisitar.append((point[0], point[1]+2))
 
         if(self.measures.irSensor[self.center_id] < 1.2):
             if self.nosvisitados.count((point[0]+2, point[1])) == 0:
@@ -841,10 +863,10 @@ class MyRob(CRobLinkAngs):
             if self.nosvisitados.count((point[0], point[1]-2)) == 0:
                 self.nosparavisitar.append((point[0], point[1]-2))
 
-        if(self.measures.irSensor[self.left_id] < 1.2):
-            if self.nosvisitados.count((point[0], point[1]+2)) == 0:
-                self.nosparavisitar.append((point[0], point[1]+2))
-
+        if self.measures.irSensor[self.back_id] < 1.2:
+            if self.nosvisitados.count((point[0]-2, point[1])) == 0:
+                self.nosparavisitar.append((point[0]-2, point[1]))
+        
         while self.nosparavisitar.count(point) > 0:
             self.nosparavisitar.remove(point)
 
@@ -858,10 +880,6 @@ class MyRob(CRobLinkAngs):
         if self.nosvisitados.count(point) == 0:
             self.nosvisitados.append(point)
 
-        if(self.measures.irSensor[self.back_id] < 1.2):
-            if self.nosvisitados.count((point[0], point[1]-2)) == 0:
-                self.nosparavisitar.append((point[0], point[1]-2))
-
         if(self.measures.irSensor[self.center_id] < 1.2):
             if self.nosvisitados.count((point[0], point[1]+2)) == 0:
                 self.nosparavisitar.append((point[0], point[1]+2))
@@ -873,6 +891,10 @@ class MyRob(CRobLinkAngs):
         if(self.measures.irSensor[self.left_id] < 1.2):
             if self.nosvisitados.count((point[0]-2, point[1])) == 0:
                 self.nosparavisitar.append((point[0]-2, point[1]))
+        
+        if(self.measures.irSensor[self.back_id] < 1.2):
+            if self.nosvisitados.count((point[0], point[1]-2)) == 0:
+                self.nosparavisitar.append((point[0], point[1]-2))
 
         while self.nosparavisitar.count(point) > 0:
             self.nosparavisitar.remove(point)
@@ -887,10 +909,6 @@ class MyRob(CRobLinkAngs):
         if self.nosvisitados.count(point) == 0:
             self.nosvisitados.append(point)
 
-        if(self.measures.irSensor[self.back_id] < 1.2):
-            if self.nosvisitados.count((point[0]+2, point[1])) == 0:
-                self.nosparavisitar.append((point[0]+2, point[1]))
-
         if(self.measures.irSensor[self.center_id] < 1.2):
             if self.nosvisitados.count((point[0]-2, point[1])) == 0:
                 self.nosparavisitar.append((point[0]-2, point[1]))
@@ -902,6 +920,10 @@ class MyRob(CRobLinkAngs):
         if(self.measures.irSensor[self.left_id] < 1.2):
             if self.nosvisitados.count((point[0], point[1]-2)) == 0:
                 self.nosparavisitar.append((point[0], point[1]-2))
+
+        if(self.measures.irSensor[self.back_id] < 1.2):
+            if self.nosvisitados.count((point[0]+2, point[1])) == 0:
+                self.nosparavisitar.append((point[0]+2, point[1]))
 
         while self.nosparavisitar.count(point) > 0:
             self.nosparavisitar.remove(point)
@@ -915,11 +937,7 @@ class MyRob(CRobLinkAngs):
 
         if self.nosvisitados.count(point) == 0:
             self.nosvisitados.append(point)
-
-        if(self.measures.irSensor[self.back_id] < 1.2):
-            if self.nosvisitados.count((point[0], point[1]+2)) == 0:
-                self.nosparavisitar.append((point[0], point[1]+2))
-
+        
         if(self.measures.irSensor[self.center_id] < 1.2):
             if self.nosvisitados.count((point[0], point[1]-2)) == 0:
                 self.nosparavisitar.append((point[0], point[1]-2))
@@ -932,6 +950,10 @@ class MyRob(CRobLinkAngs):
             if self.nosvisitados.count((point[0]+2, point[1])) == 0:
                 self.nosparavisitar.append((point[0]+2, point[1]))
 
+        if(self.measures.irSensor[self.back_id] < 1.2):
+            if self.nosvisitados.count((point[0], point[1]+2)) == 0:
+                self.nosparavisitar.append((point[0], point[1]+2))
+
         while self.nosparavisitar.count(point) > 0:
             self.nosparavisitar.remove(point)
 
@@ -941,36 +963,34 @@ class MyRob(CRobLinkAngs):
     def drawMapNorth(self):
 
         self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
-        self.astar_maze[self.xorigemmatriz][self.yorigemmatriz] = 0
+        # self.astar_maze[self.xorigemmatriz][self.yorigemmatriz] = 0
         
-        if self.measures.irSensor[self.center_id] > 1.1:
+        if self.measures.irSensor[self.center_id] > 1.2:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "|"
         else:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "X"
-            self.astar_maze[self.xorigemmatriz][self.yorigemmatriz+1] = 0
+            # self.astar_maze[self.xorigemmatriz][self.yorigemmatriz+1] = 0
 
-        if self.measures.irSensor[self.left_id] > 1.1:
+        if self.measures.irSensor[self.left_id] > 1.2:
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "-"
         else:
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "X"
-            self.astar_maze[self.xorigemmatriz-1][self.yorigemmatriz] = 0
+            # self.astar_maze[self.xorigemmatriz-1][self.yorigemmatriz] = 0
 
-        if self.measures.irSensor[self.right_id] > 1.1:
+        if self.measures.irSensor[self.right_id] > 1.2:
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "-"
         else:
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "X"
-            self.astar_maze[self.xorigemmatriz+1][self.yorigemmatriz] = 0
+            # self.astar_maze[self.xorigemmatriz+1][self.yorigemmatriz] = 0
 
-        if self.measures.irSensor[self.back_id] > 1.1:
+        if self.measures.irSensor[self.back_id] > 1.2:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "|"
         else:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
-            self.astar_maze[self.xorigemmatriz][self.yorigemmatriz-1] = 0
+            # self.astar_maze[self.xorigemmatriz][self.yorigemmatriz-1] = 0
 
         if self.matrix[13][27] != "I":
             self.matrix[13][27] = "I"
-
-        self.yorigemmatriz = self.yorigemmatriz + 2
 
     # Draw map outfile and astar maze while going West 
     def drawMapWest(self):
@@ -978,25 +998,25 @@ class MyRob(CRobLinkAngs):
         self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
         self.astar_maze[self.xorigemmatriz][self.yorigemmatriz] = 0
 
-        if self.measures.irSensor[self.center_id] > 1.1:
+        if self.measures.irSensor[self.center_id] > 1.2:
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "-"
         else:
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "X"
             self.astar_maze[self.xorigemmatriz-1][self.yorigemmatriz] = 0
 
-        if self.measures.irSensor[self.left_id] > 1.1:
+        if self.measures.irSensor[self.left_id] > 1.2:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "|"
         else:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
             self.astar_maze[self.xorigemmatriz][self.yorigemmatriz-1] = 0
 
-        if self.measures.irSensor[self.right_id] > 1.1:
+        if self.measures.irSensor[self.right_id] > 1.2:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "|"
         else:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "X"
             self.astar_maze[self.xorigemmatriz][self.yorigemmatriz+1] = 0
 
-        if self.measures.irSensor[self.back_id] > 1.1:
+        if self.measures.irSensor[self.back_id] > 1.2:
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "-"
         else:
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "X"
@@ -1004,8 +1024,6 @@ class MyRob(CRobLinkAngs):
 
         if self.matrix[13][27] != "I":
             self.matrix[13][27] = "I"
-
-        self.xorigemmatriz = self.xorigemmatriz - 2
 
     # Draw map outfile and astar maze while going South 
     def drawMapSouth(self):
@@ -1013,25 +1031,25 @@ class MyRob(CRobLinkAngs):
         self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
         self.astar_maze[self.xorigemmatriz][self.yorigemmatriz] = 0
 
-        if self.measures.irSensor[self.center_id] > 1.1:
+        if self.measures.irSensor[self.center_id] > 1.2:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "|"
         else:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
             self.astar_maze[self.xorigemmatriz][self.yorigemmatriz-1] = 0
 
-        if self.measures.irSensor[self.left_id] > 1.1:
+        if self.measures.irSensor[self.left_id] > 1.2:
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "-"
         else:
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "X"
             self.astar_maze[self.xorigemmatriz+1][self.yorigemmatriz] = 0
 
-        if self.measures.irSensor[self.right_id] > 1.1:
+        if self.measures.irSensor[self.right_id] > 1.2:
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "-"
         else:
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "X"
             self.astar_maze[self.xorigemmatriz-1][self.yorigemmatriz] = 0
 
-        if self.measures.irSensor[self.back_id] > 1.1:
+        if self.measures.irSensor[self.back_id] > 1.2:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "|"
         else:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "X"
@@ -1039,8 +1057,6 @@ class MyRob(CRobLinkAngs):
 
         if self.matrix[13][27] != "I":
             self.matrix[13][27] = "I"
-
-        self.yorigemmatriz = self.yorigemmatriz - 2
 
     # Draw map outfile and astar maze while going East 
     def drawMapEast(self):
@@ -1048,34 +1064,47 @@ class MyRob(CRobLinkAngs):
         self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
         self.astar_maze[self.xorigemmatriz][self.yorigemmatriz] = 0
 
-        if self.measures.irSensor[self.center_id] > 1.1:
+        if self.measures.irSensor[self.center_id] > 1.2:
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "-"
         else:
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "X"
             self.astar_maze[self.xorigemmatriz+1][self.yorigemmatriz] = 0
 
-        if self.measures.irSensor[self.left_id] > 1.1:
+        if self.measures.irSensor[self.left_id] > 1.2:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "|"
         else:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "X"
             self.astar_maze[self.xorigemmatriz][self.yorigemmatriz+1] = 0
 
-        if self.measures.irSensor[self.right_id] > 1.1:
+        if self.measures.irSensor[self.right_id] > 1.2:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "|"
         else:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
             self.astar_maze[self.xorigemmatriz][self.yorigemmatriz-1] = 0
 
-        if self.measures.irSensor[self.back_id] > 1.1:
+        if self.measures.irSensor[self.back_id] > 1.2:
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "-"
         else:
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "X"
             self.astar_maze[self.xorigemmatriz-1][self.yorigemmatriz] = 0
 
-        self.xorigemmatriz = self.xorigemmatriz + 2
-
         if self.matrix[13][27] != "I":
             self.matrix[13][27] = "I"
+    
+    def drawAstarMazeNorth(self, point):
+        self.astar_maze[point[0]][point[1]] = 0
+        if(self.measures.irSensor[self.center_id] < 1.2):
+            self.astar_maze[point[0]+1][point[1]] = 0
+            self.astar_maze[point[0]+2][point[1]] = 0
+        if(self.measures.irSensor[self.left_id] < 1.2):
+            self.astar_maze[point[0]][point[1]+1] = 0
+            self.astar_maze[point[0]][point[1]+2] = 0
+        if(self.measures.irSensor[self.right_id] < 1.2):
+            self.astar_maze[point[0]][point[1]-1] = 0
+            self.astar_maze[point[0]][point[1]-2] = 0
+        if(self.measures.irSensor[self.back_id] < 1.2):
+            self.astar_maze[point[0]-1][point[1]] = 0
+            self.astar_maze[point[0]-2][point[1]] = 0
 
     # Call of the finish function when all positions have been visited
     def checkEnd(self):
@@ -1150,28 +1179,28 @@ class MyRob(CRobLinkAngs):
         # Direction N
         if self.closest_direction == "N":
             # Front correction
-            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 2.7:
+            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 2.8:
                 # print("Front correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[0]
                 closest_x_wall_coordinate = round(self.movement_model_x + 1)
                 self.movement_model_x = closest_x_wall_coordinate - self.wall_diameter - closest_x_wall_distance - self.robot_radius
 
             # Back correction
-            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 2.7:
+            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 2.8:
                 # print("Back correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[3]
                 closest_x_wall_coordinate = round(self.movement_model_x - 1)
                 self.movement_model_x = closest_x_wall_coordinate + self.wall_diameter + closest_x_wall_distance + self.robot_radius
 
             # Left correction
-            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 2.7:
+            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 2.8:
                 # print("Left correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[1]
                 closest_y_wall_coordinate = round(self.movement_model_y + 1)
                 self.movement_model_y = closest_y_wall_coordinate - self.wall_diameter - closest_y_wall_distance - self.robot_radius
 
             # Right correction
-            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 2.7:
+            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 2.8:
                 # print("Right correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[2]
                 closest_y_wall_coordinate = round(self.movement_model_y - 1)
@@ -1181,28 +1210,28 @@ class MyRob(CRobLinkAngs):
         elif self.closest_direction == "S":
             
             # Front correction
-            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 2.7:
+            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 2.8:
                 # print("Front correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[0]
                 closest_x_wall_coordinate = round(self.movement_model_x - 1)
                 self.movement_model_x = closest_x_wall_coordinate + self.wall_diameter + closest_x_wall_distance + self.robot_radius
 
             # Back correction
-            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 2.7:
+            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 2.8:
                 # print("Back correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[3]
                 closest_x_wall_coordinate = round(self.movement_model_x + 1)
                 self.movement_model_x = closest_x_wall_coordinate - self.wall_diameter - closest_x_wall_distance - self.robot_radius
 
             # Left correction
-            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 2.7:
+            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 2.8:
                 # print("Left correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[1]
                 closest_y_wall_coordinate = round(self.movement_model_y - 1)
                 self.movement_model_y = closest_y_wall_coordinate + self.wall_diameter + closest_y_wall_distance + self.robot_radius
 
             # Right correction
-            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 2.7:
+            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 2.8:
                 # print("Right correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[2]
                 closest_y_wall_coordinate = round(self.movement_model_y + 1)
@@ -1212,28 +1241,28 @@ class MyRob(CRobLinkAngs):
         elif self.closest_direction == "W":
             
             # Front correction
-            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 2.7:
+            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 2.8:
                 # print("Front correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[0]
                 closest_y_wall_coordinate = round(self.movement_model_y + 1)
                 self.movement_model_y = closest_y_wall_coordinate - self.wall_diameter - closest_x_wall_distance - self.robot_radius
 
             # Back correction
-            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 2.7:
+            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 2.8:
                 # print("Back correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[3]
                 closest_y_wall_coordinate = round(self.movement_model_y - 1)
                 self.movement_model_y = closest_y_wall_coordinate + self.wall_diameter + closest_y_wall_distance + self.robot_radius
 
             # Left correction
-            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 2.7:
+            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 2.8:
                 # print("Left correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[1]
                 closest_x_wall_coordinate = round(self.movement_model_x - 1)
                 self.movement_model_x = closest_x_wall_coordinate + self.wall_diameter + closest_x_wall_distance + self.robot_radius
 
             # Right correction
-            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 2.7:
+            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 2.8:
                 # print("Right correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[2]
                 closest_x_wall_coordinate = round(self.movement_model_x + 1)
@@ -1243,28 +1272,28 @@ class MyRob(CRobLinkAngs):
         elif self.closest_direction == "E":
             
             # Front correction
-            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 2.7:
+            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 2.8:
                 # print("Front correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[0]
                 closest_y_wall_coordinate = round(self.movement_model_y - 1)
                 self.movement_model_y = closest_y_wall_coordinate + self.wall_diameter + closest_y_wall_distance + self.robot_radius
 
             # Back correction
-            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 2.7:
+            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 2.8:
                 # print("Back correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[3]
                 closest_y_wall_coordinate = round(self.movement_model_y + 1)
                 self.movement_model_y = closest_y_wall_coordinate - self.wall_diameter - closest_y_wall_distance - self.robot_radius
 
             # Left correction
-            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 2.7:
+            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 2.8:
                 # print("Left correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[1]
                 closest_x_wall_coordinate = round(self.movement_model_x + 1)
                 self.movement_model_x = closest_x_wall_coordinate - self.wall_diameter - closest_x_wall_distance - self.robot_radius
 
             # Right correction
-            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 2.7:
+            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 2.8:
                 # print("Right correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[2]
                 closest_x_wall_coordinate = round(self.movement_model_x - 1)

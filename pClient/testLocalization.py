@@ -96,7 +96,7 @@ class MyRob(CRobLinkAngs):
     def localization(self):
         self.movementModel()
         self.nearestDirectionEstimate()
-        self.sensorsCorrection()
+        # self.sensorsCorrection()
 
 
         gps_x = self.measures.x - (self.origin_x - 13)
@@ -115,19 +115,19 @@ class MyRob(CRobLinkAngs):
         print("right: ", self.measures.irSensor[2])
         print("back: ", self.measures.irSensor[3])
         print("gps x                : ", round(gps_x,1))
-        # print("movement model x     : ", round(self.movement_model_x,1))
-        # print("sensors x            : ", self.sensors_x)
+        print("movement model x     : ", round(self.movement_model_x,1))
+        print("sensors x            : ", self.sensors_x)
         print("media x              : ", round(self.media_x,1))
         print("dif x                : ", round(dif_x,1))
         print("---------------------------------------------")
         print("gps y                : ", round(gps_y,1))
-        # print("movement model y     : ", round(self.movement_model_y,1))
-        # print("sensors y            : ", self.sensors_y)
+        print("movement model y     : ", round(self.movement_model_y,1))
+        print("sensors y            : ", self.sensors_y)
         print("media y              : ", round(self.media_y,1))
         print("dif y                : ", round(dif_y,1))
-        # print("---------------------------------------------")
-        # print("compass              : ", self.measures.compass)
-        # print("movement model theta : ", math.degrees(self.movement_model_theta))
+        print("---------------------------------------------")
+        print("compass              : ", self.measures.compass)
+        print("movement model theta : ", math.degrees(self.movement_model_theta))
         print("###############################################")
 
     # Calculation of coordinates and theta from movement model
@@ -158,8 +158,8 @@ class MyRob(CRobLinkAngs):
             self.movement_model_theta = -(self.movement_model_theta)
 
         # Current coordinates
-        self.movement_model_x = previous_x + (lin * math.cos(previous_theta))
-        self.movement_model_y = previous_y + (lin * math.sin(previous_theta))
+        self.movement_model_x = previous_x + (lin * math.sin(previous_theta))
+        self.movement_model_y = previous_y + (lin * math.cos(previous_theta))
 
     # Correction of coordinates from sensors
     def sensorsCorrection(self):
@@ -299,46 +299,46 @@ class MyRob(CRobLinkAngs):
     # Robot movement algorithm
     def movement(self):
 
-        # if self.measures.irSensor[0] > 2\
-        #     or self.measures.irSensor[1]   > 2.7\
-        #     or self.measures.irSensor[2]  > 2.7:
-        #     # print("Alto Perigo")
-        #     if self.measures.irSensor[1] > self.measures.irSensor[2]:
-        #         self.driveMotorsUpdate(0.15,-0.13)
-        #     else:
-        #         self.driveMotorsUpdate(-0.13,0.15)
+        if self.measures.irSensor[0] > 2\
+            or self.measures.irSensor[1]   > 2.7\
+            or self.measures.irSensor[2]  > 2.7:
+            # print("Alto Perigo")
+            if self.measures.irSensor[1] > self.measures.irSensor[2]:
+                self.driveMotorsUpdate(0.15,-0.13)
+            else:
+                self.driveMotorsUpdate(-0.13,0.15)
 
-        # elif self.measures.irSensor[0] > 1.1\
-        #     or self.measures.irSensor[1]   > 2.7\
-        #     or self.measures.irSensor[2]  > 2.7:
-        #     # print("Medio Perigo")
-        #     if self.measures.irSensor[1] > self.measures.irSensor[2]:
-        #         self.driveMotorsUpdate(0.15, -0.06)
-        #     else: 
-        #         self.driveMotorsUpdate(-0.06,0.15)
+        elif self.measures.irSensor[0] > 1.1\
+            or self.measures.irSensor[1]   > 2.7\
+            or self.measures.irSensor[2]  > 2.7:
+            # print("Medio Perigo")
+            if self.measures.irSensor[1] > self.measures.irSensor[2]:
+                self.driveMotorsUpdate(0.15, -0.06)
+            else: 
+                self.driveMotorsUpdate(-0.06,0.15)
 
-        # elif self.measures.irSensor[0] > 0.6\
-        #     or self.measures.irSensor[1]   > 2.6\
-        #     or self.measures.irSensor[2]  > 2.6:
-        #     # print("Baixo Perigo")
-        #     if self.measures.irSensor[1] > self.measures.irSensor[2]:
-        #         self.driveMotorsUpdate(0.15,0.08)
-        #     else: 
-        #         self.driveMotorsUpdate(0.08,0.15)
+        elif self.measures.irSensor[0] > 0.6\
+            or self.measures.irSensor[1]   > 2.6\
+            or self.measures.irSensor[2]  > 2.6:
+            # print("Baixo Perigo")
+            if self.measures.irSensor[1] > self.measures.irSensor[2]:
+                self.driveMotorsUpdate(0.15,0.08)
+            else: 
+                self.driveMotorsUpdate(0.08,0.15)
 
-        # elif self.measures.irSensor[0] > 0.5\
-        #     or self.measures.irSensor[1]   > 2.1\
-        #     or self.measures.irSensor[2]  > 2.1:
-        #     # print("Sem Perigo")
-        #     if self.measures.irSensor[1] > self.measures.irSensor[2]:
-        #         self.driveMotorsUpdate(0.15,0.145)
-        #     else:
-        #         self.driveMotorsUpdate(0.145,0.15)
+        elif self.measures.irSensor[0] > 0.5\
+            or self.measures.irSensor[1]   > 2.1\
+            or self.measures.irSensor[2]  > 2.1:
+            # print("Sem Perigo")
+            if self.measures.irSensor[1] > self.measures.irSensor[2]:
+                self.driveMotorsUpdate(0.15,0.145)
+            else:
+                self.driveMotorsUpdate(0.145,0.15)
         
-        # else:
-        #     self.driveMotorsUpdate(0.15,0.15)
+        else:
+            self.driveMotorsUpdate(0.15,0.15)
 
-        self.driveMotorsUpdate(-0.15,0.15)
+        # self.driveMotorsUpdate(-0.15,0.15)
 
     # Drive Motors and aand updating the power input variables for the movement model
     def driveMotorsUpdate(self, in_left, in_right):
@@ -423,7 +423,7 @@ for i in range(1, len(sys.argv),2):
         quit()
 
 if __name__ == '__main__':
-    rob=MyRob(rob_name,pos,[0.0,90.0,-90.0,180.0],host)
+    rob=MyRob(rob_name,pos,[0.0,60.0,-60.0,180.0],host)
     if mapc != None:
         rob.setMap(mapc.labMap)
         rob.printMap()
