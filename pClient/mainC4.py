@@ -125,19 +125,41 @@ class MyRob(CRobLinkAngs):
 
     # Main function       
     def main(self):
-        # print("\n########################################################################")
+        print("\n########################################################################")
 
         if ((len(self.nosparavisitar) == 0) or (self.measures.time >= 6000)) and self.end == False:
             self.checkEnd()
         else:
             self.localization()
-            # print("front: ", self.measures.irSensor[0])
-            # print("left: ", self.measures.irSensor[1])
-            # print("right: ", self.measures.irSensor[2])
-            # print("back: ", self.measures.irSensor[3])
-            # print("\nx   : ", self.xpontoatual)
-            # print("y   : ", self.ypontoatual)
-            # print("compass : ", self.myCompass)
+
+            # X coordinate prints
+            print("x gps            : ", self.measures.x - (self.origin_x - 13))
+            print("x movement model : ", self.movement_model_x)
+            # print("x sensors        : ", self.sensors_x)
+
+            # if self.movement_model_x != self.sensors_x:
+            #     if abs((self.measures.x - (self.origin_x - 13)) - self.movement_model_x) < abs((self.measures.x - (self.origin_x - 13)) - self.sensors_x):
+            #         print("x movement model is better")
+            #     elif abs((self.measures.x - (self.origin_x - 13)) - self.movement_model_x) > abs((self.measures.x - (self.origin_x - 13)) - self.sensors_x):
+            #         print("x sensor is better")
+            # elif self.movement_model_x == self.sensors_x:
+            #     print("x no difference")
+
+            print("-----------------------------------------------")
+
+            # Y coordinate prints
+            print("y gps            : ", self.measures.y - (self.origin_y - 27))
+            print("y movement model : ", self.movement_model_y)
+            # print("y sensors        : ", self.sensors_y)
+
+            # if self.movement_model_y != self.sensors_y:
+            #     if abs((self.measures.y - (self.origin_y - 13)) - self.movement_model_y) < abs((self.measures.y - (self.origin_y - 27)) - self.sensors_y):
+            #         print("y movement model is better")
+            #     elif abs((self.measures.y - (self.origin_y - 13)) - self.movement_model_y) > abs((self.measures.y - (self.origin_y - 27)) - self.sensors_y):
+            #         print("y sensor is better")
+            # elif self.movement_model_y == self.sensors_y:
+            #     print("y no difference")
+
 
             if self.direcao == "North":
                 self.goingNorth()
@@ -149,7 +171,7 @@ class MyRob(CRobLinkAngs):
                 self.goingEast()
 
             self.writeOutputFiles()
-            # print("########################################################################")
+        print("########################################################################")
     
     # Robot movement when it needs to deviate to its left
     def auxGoLeft(self):
@@ -1062,16 +1084,15 @@ class MyRob(CRobLinkAngs):
 
     # Calculation of final coordinates
     def localization(self):
+        
         self.movementModel()
         self.nearestDirectionEstimate()
         self.sensorsCorrection()
-
+        
         self.myCompass = round(math.degrees(self.movement_model_theta))
-        # self.xpontoatual = round(self.movement_model_x,1)
-        # self.ypontoatual = round(self.movement_model_y,1)
 
-        self.xpontoatual = round(self.measures.x - (self.origin_x - 13) , 1)
-        self.ypontoatual = round(self.measures.y - (self.origin_y - 27) , 1)
+        self.xpontoatual = round(self.movement_model_x, 1)
+        self.ypontoatual = round(self.movement_model_y, 1)
 
     # Calculation of coordinates and theta from movement model
     def movementModel(self):
@@ -1111,33 +1132,37 @@ class MyRob(CRobLinkAngs):
         closest_x_wall_distance = 0
         closest_y_wall_coordinate = 0
         closest_y_wall_distance = 0
+
+        # In case there is no sensors correction
+        # self.sensors_x = self.movement_model_x
+        # self.sensors_y = self.movement_model_y
         
         # Direction N
         if self.closest_direction == "N":
             # Front correction
             if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 3.1:
-                # print("Front correction*****************************************")
+                # print("Front correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[0]
                 closest_x_wall_coordinate = round(self.movement_model_x + 1)
                 self.movement_model_x = closest_x_wall_coordinate - self.wall_diameter - closest_x_wall_distance - self.robot_radius
 
             # Back correction
             elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 3.1:
-                # print("Back correction*****************************************")
+                # print("Back correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[3]
                 closest_x_wall_coordinate = round(self.movement_model_x - 1)
                 self.movement_model_x = closest_x_wall_coordinate + self.wall_diameter + closest_x_wall_distance + self.robot_radius
 
             # Left correction
             if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 3.1:
-                # print("Left correction*****************************************")
+                # print("Left correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[1]
                 closest_y_wall_coordinate = round(self.movement_model_y + 1)
                 self.movement_model_y = closest_y_wall_coordinate - self.wall_diameter - closest_y_wall_distance - self.robot_radius
 
             # Right correction
             elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 3.1:
-                # print("Right correction*****************************************")
+                # print("Right correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[2]
                 closest_y_wall_coordinate = round(self.movement_model_y - 1)
                 self.movement_model_y = closest_y_wall_coordinate + self.wall_diameter + closest_y_wall_distance + self.robot_radius
@@ -1147,28 +1172,28 @@ class MyRob(CRobLinkAngs):
             
             # Front correction
             if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 3.1:
-                # print("Front correction*****************************************")
+                # print("Front correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[0]
                 closest_x_wall_coordinate = round(self.movement_model_x - 1)
                 self.movement_model_x = closest_x_wall_coordinate + self.wall_diameter + closest_x_wall_distance + self.robot_radius
 
             # Back correction
             elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 3.1:
-                # print("Back correction*****************************************")
+                # print("Back correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[3]
                 closest_x_wall_coordinate = round(self.movement_model_x + 1)
                 self.movement_model_x = closest_x_wall_coordinate - self.wall_diameter - closest_x_wall_distance - self.robot_radius
 
             # Left correction
             if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 3.1:
-                # print("Left correction*****************************************")
+                # print("Left correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[1]
                 closest_y_wall_coordinate = round(self.movement_model_y - 1)
                 self.movement_model_y = closest_y_wall_coordinate + self.wall_diameter + closest_y_wall_distance + self.robot_radius
 
             # Right correction
             elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 3.1:
-                # print("Right correction*****************************************")
+                # print("Right correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[2]
                 closest_y_wall_coordinate = round(self.movement_model_y + 1)
                 self.movement_model_y = closest_y_wall_coordinate - self.wall_diameter - closest_y_wall_distance - self.robot_radius
@@ -1178,28 +1203,28 @@ class MyRob(CRobLinkAngs):
             
             # Front correction
             if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 3.1:
-                # print("Front correction*****************************************")
+                # print("Front correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[0]
                 closest_y_wall_coordinate = round(self.movement_model_y + 1)
                 self.movement_model_y = closest_y_wall_coordinate - self.wall_diameter - closest_x_wall_distance - self.robot_radius
 
             # Back correction
             elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 3.1:
-                # print("Back correction*****************************************")
+                # print("Back correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[3]
                 closest_y_wall_coordinate = round(self.movement_model_y - 1)
                 self.movement_model_y = closest_y_wall_coordinate + self.wall_diameter + closest_y_wall_distance + self.robot_radius
 
             # Left correction
             if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 3.1:
-                # print("Left correction*****************************************")
+                # print("Left correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[1]
                 closest_x_wall_coordinate = round(self.movement_model_x - 1)
                 self.movement_model_x = closest_x_wall_coordinate + self.wall_diameter + closest_x_wall_distance + self.robot_radius
 
             # Right correction
             elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 3.1:
-                # print("Right correction*****************************************")
+                # print("Right correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[2]
                 closest_x_wall_coordinate = round(self.movement_model_x + 1)
                 self.movement_model_x = closest_x_wall_coordinate - self.wall_diameter - closest_x_wall_distance - self.robot_radius
@@ -1209,28 +1234,28 @@ class MyRob(CRobLinkAngs):
             
             # Front correction
             if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 3.1:
-                # print("Front correction*****************************************")
+                # print("Front correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[0]
                 closest_y_wall_coordinate = round(self.movement_model_y - 1)
                 self.movement_model_y = closest_y_wall_coordinate + self.wall_diameter + closest_y_wall_distance + self.robot_radius
 
             # Back correction
             elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 3.1:
-                # print("Back correction*****************************************")
+                # print("Back correction")
                 closest_y_wall_distance = 1/self.measures.irSensor[3]
                 closest_y_wall_coordinate = round(self.movement_model_y + 1)
                 self.movement_model_y = closest_y_wall_coordinate - self.wall_diameter - closest_y_wall_distance - self.robot_radius
 
             # Left correction
             if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 3.1:
-                # print("Left correction*****************************************")
+                # print("Left correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[1]
                 closest_x_wall_coordinate = round(self.movement_model_x + 1)
                 self.movement_model_x = closest_x_wall_coordinate - self.wall_diameter - closest_x_wall_distance - self.robot_radius
 
             # Right correction
             elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 3.1:
-                # print("Right correction*****************************************")
+                # print("Right correction")
                 closest_x_wall_distance = 1/self.measures.irSensor[2]
                 closest_x_wall_coordinate = round(self.movement_model_x - 1)
                 self.movement_model_x = closest_x_wall_coordinate + self.wall_diameter + closest_x_wall_distance + self.robot_radius
