@@ -18,28 +18,28 @@ class MyRob(CRobLinkAngs):
     proximadirecao = ""
     xorigemmatriz = 13
     yorigemmatriz = 27
+    xorigemtransformada = 13
+    yorigemtransformada = 27
+    movement_model_x = 13
+    movement_model_y = 27
+    xpontoatual = 13
+    ypontoatual = 27
+    sensors_x = 13
+    sensors_y = 27
     matrix = []
     astar_maze = []
     nosparavisitar = []
     nosvisitados = []
-    xorigemtransformada = 13
-    yorigemtransformada = 27
     closest_direction = "N"
     start = False
     in_left = 0
     in_right = 0
     current_out_left = 0
     current_out_right = 0
-    movement_model_x = 13
-    movement_model_y = 27
-    xpontoatual = 13
-    ypontoatual = 27
     previous_theta = 0
     movement_model_theta = 0
     origin_x = 0
     origin_y = 0
-    sensors_x = 13
-    sensors_y = 27
     wall_diameter = 0.1
     robot_radius = 0.5
     myCompass = 0
@@ -47,6 +47,7 @@ class MyRob(CRobLinkAngs):
     beaconNumberList = []
     beaconCoordinateList = []
     end = False
+    pathformatada = []
 
     def __init__(self, rob_name, rob_id, angles, host):
         CRobLinkAngs.__init__(self, rob_name, rob_id, angles, host)
@@ -83,7 +84,7 @@ class MyRob(CRobLinkAngs):
                 self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "I"
                 
                 # Astar Maze
-                rows, colums = 110, 57
+                rows, colums = 50, 50
                 self.astar_maze = [[1 for x in range(rows)] for y in range(colums)]
 
                 # Inicial evaluation
@@ -126,7 +127,7 @@ class MyRob(CRobLinkAngs):
     def main(self):
         # print("\n########################################################################")
 
-        if ((len(self.nosparavisitar) == 0) or (self.measures.time >= 10000)) and self.end == False:
+        if ((len(self.nosparavisitar) == 0) or (self.measures.time >= 6000)) and self.end == False:
             self.checkEnd()
         else:
             self.localization()
@@ -152,7 +153,7 @@ class MyRob(CRobLinkAngs):
     
     # Robot movement when it needs to deviate to its left
     def auxGoLeft(self):
-
+        # print("left")
         difBetWeenTarget = 0
         difToCellCenter = 0
         inX = 0.000
@@ -170,26 +171,26 @@ class MyRob(CRobLinkAngs):
         # print("difToCellCenter: ", difToCellCenter)
 
         if  difToCellCenter >= 0.30:
+            # print("3")
             inX = 0.120
         elif  difToCellCenter >= 0.20:
-            inX = 0.130
-        elif difToCellCenter >= 0.15:
+            # print("2")
             inX = 0.135
-        elif difToCellCenter >= 0.10:
+        elif difToCellCenter >= 0.15:
+            # print("1")
             inX = 0.140
-        elif difToCellCenter >= 0.05:
-            inX = 0.145
         else:
-            inX = 0.149
+            # print("0")
+            inX = 0.145
         
-        if difBetWeenTarget <= 0.3:
-            self.driveMotorsUpdate(inX/15,inY/15)
+        if difBetWeenTarget <= 0.2:
+            self.driveMotorsUpdate(inX/5,inY/5)
         else:
             self.driveMotorsUpdate(inX,inY)
 
     # Robot movement when it needs to deviate to its right
     def auxGoRight(self):
-
+        # print("right")
         difBetWeenTarget = 0
         difToCellCenter = 0
         inX = 0.150
@@ -207,26 +208,26 @@ class MyRob(CRobLinkAngs):
         # print("difToCellCenter: ", difToCellCenter)
 
         if  difToCellCenter >= 0.30:
+            # print("3")
             inY = 0.120
         elif  difToCellCenter >= 0.20:
-            inY = 0.130
-        elif difToCellCenter >= 0.15:
+            # print("2")
             inY = 0.135
-        elif difToCellCenter >= 0.10:
+        elif difToCellCenter >= 0.15:
+            # print("1")
             inY = 0.140
-        elif difToCellCenter >= 0.05:
-            inY = 0.145
         else:
-            inY = 0.149
+            # print("0")
+            inY = 0.145
         
-        if difBetWeenTarget <= 0.3:
-            self.driveMotorsUpdate(inX/15,inY/15)
+        if difBetWeenTarget <= 0.2:
+            self.driveMotorsUpdate(inX/5,inY/5)
         else:
             self.driveMotorsUpdate(inX,inY)
 
     # Robot movement when it needs to go forward
     def auxGoFront(self):
-
+        # print("front")
         inX = 0.150
         inY = 0.150
         
@@ -238,8 +239,8 @@ class MyRob(CRobLinkAngs):
         # print("go front")
         # print("la difrenca: ", dif)
 
-        if (dif) <= 0.3:
-            self.driveMotorsUpdate(inX/15,inY/15)
+        if (dif) <= 0.2:
+            self.driveMotorsUpdate(inX/5,inY/5)
         else:
             self.driveMotorsUpdate(inX,inY)
 
@@ -248,7 +249,7 @@ class MyRob(CRobLinkAngs):
 
         # print("ja passei")
         # print("go back")
-        self.driveMotorsUpdate(-0.01,-0.01)
+        self.driveMotorsUpdate(-0.02,-0.02)
 
     # Robot movement when it needs to rotate North
     def auxRotateNorth(self):
@@ -327,11 +328,14 @@ class MyRob(CRobLinkAngs):
     # Check if all the positions have benn visited or there is no time left
     def checkEnd(self):
 
-        if len(self.nosparavisitar) == 0:
-            print("TODAS AS POSICOES FORAM ENCONTRADAS")
-            print("TEMPO RESTANTE: ", 10000-self.measures.time)
+        if self.measures.time >= 6000:
+            print("\nfim do tempo")
+        elif len(self.nosparavisitar) == 0:
+            print("\ntodas as posicoes foram descobertas")
+            print("tempo atual : ", self.measures.time)
+            print("tempo restante: ", 6000-self.measures.time)
 
-            # Draw last position just in case
+        # Draw last position just in case
             if self.direcao == "North":
                 self.drawMapNorth()
             elif self.direcao == "West":
@@ -355,29 +359,26 @@ class MyRob(CRobLinkAngs):
                 minpathlen = 27* 55
                 posinicial = end
                 self.beaconCoordinateList.remove(end)
+
             orderedlist.append([13,27])
             orderedlist.insert(0, [13,27])
-            print("final ordered list: ", orderedlist)
 
+            listofpaths = []
             for i in range(len(orderedlist)-1):
                 path = pathfinder.search(self.astar_maze, 1, orderedlist[i], orderedlist[i+1])
-                print("path", i)
-                print(path)
+                listofpaths = listofpaths + path
 
-            # path = pathfinder.search(self.astar_maze, 1, [13, 19], [35, 25])
-            # print("path1", path)
-            # print("lenpath1", len(path))
+            listofpaths = [v for i, v in enumerate(listofpaths) if i == 0 or v != listofpaths[i-1]]
+            print("\npath: ", listofpaths)
 
-            # path = pathfinder.search(self.astar_maze, 1, [13, 19], [27, 23])
-            # print("path2", path)
-            # print("lenpath2", len(path))
+            for node in listofpaths:
+                pontoformatado = (node[1]-27, -(node[0]-13))
+                self.pathformatada.append(pontoformatado)
+
+            # print("path formatada: ", self.pathformatada)
 
             self.writeOutputFiles()
             self.end = True
-            self.finish()
-
-        if self.measures.time >= 10000:
-            print("FIM DO TEMPO")
             self.finish()
 
     # Find next point based on A* algorithm
@@ -437,9 +438,7 @@ class MyRob(CRobLinkAngs):
         if (self.measures.ground != -1) and (self.beaconNumberList.count(self.measures.ground) == 0):
             self.beaconNumberList.append(self.measures.ground)
             self.beaconCoordinateList.append([xround, yround])
-            print("\nbeacon", self.measures.ground)
-            print("beacons list len: ", len(self.beaconNumberList))
-            print("coordinates: ", self.beaconCoordinateList[self.beaconNumberList[self.measures.ground]])
+            print("\nbeacon", self.measures.ground, self.beaconCoordinateList[self.beaconNumberList[self.measures.ground]])
 
     # Main function when the compass is 0
     def goingNorth(self):
@@ -1268,9 +1267,11 @@ class MyRob(CRobLinkAngs):
                     out.write('\n')
 
         with open(outfilepath, 'w') as out:
-            out.write("path")
-            out.write('\n')
+            for node in self.pathformatada:
+                out.write(str(node[0]) + ' ' +  str(node[1]))
+                out.write('\n')
 
+                
 class Map():
     def __init__(self, filename):
         tree = ET.parse(filename)
