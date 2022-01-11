@@ -47,7 +47,7 @@ class MyRob(CRobLinkAngs):
     beaconNumberList = []
     beaconCoordinateList = []
     end = False
-    pathformatada = []
+    finalpath = []
     sensors_correction = False
 
     def __init__(self, rob_name, rob_id, angles, host):
@@ -330,50 +330,16 @@ class MyRob(CRobLinkAngs):
 
         # Draw last position just in case
         if self.direcao == "North":
-            self.drawMapNorth()
+            self.drawMapEast(self.xpontoatual, self.ypontoatual)
         elif self.direcao == "West":
-            self.drawMapWest()
+            self.drawMapWest(self.xpontoatual, self.ypontoatual)
         elif self.direcao == "South":
-            self.drawMapSouth()
+            self.drawMapSouth(self.xpontoatual, self.ypontoatual)
         elif self.direcao == "East":
-            self.drawMapEast()
+            self.drawMapEast(self.xpontoatual, self.ypontoatual)
 
-        # Create path
-        posinicial = [13,27]
-        minpathlen = 27* 55
-        orderedlist = []
-        triple = []
-        for j in range(len(self.beaconCoordinateList), 0 ,-1):
-            for t in self.beaconCoordinateList:
-                coordinates = (t[1], t[2])
-                path = pathfinder.search(self.astar_maze, 1, posinicial, coordinates)
-                if len(path) < minpathlen:
-                    minpathlen = len(path)
-                    end = coordinates
-                    triple = t
-            orderedlist.append(end)
-            minpathlen = 27* 55
-            posinicial = end
-            self.beaconCoordinateList.remove(triple)
-
-        orderedlist.append([13,27])
-        orderedlist.insert(0, [13,27])
-
-        listofpaths = []
-        for i in range(len(orderedlist)-1):
-            path = pathfinder.search(self.astar_maze, 1, orderedlist[i], orderedlist[i+1])
-            listofpaths = listofpaths + path
-
-        listofpaths = [v for i, v in enumerate(listofpaths) if i == 0 or v != listofpaths[i-1]]
-        print("\npath: ", listofpaths)
-
-        for node in listofpaths:
-            pontoformatado = (node[1]-27, -(node[0]-13))
-            self.pathformatada.append(pontoformatado)
-
-        # print("path formatada: ", self.pathformatada)
-
-        self.writeOutputFiles()
+        self.writePathOutputFile()
+        self.writeMazesOutputFiles()
         self.end = True
         self.finish()
 
@@ -438,6 +404,33 @@ class MyRob(CRobLinkAngs):
             for triple in self.beaconCoordinateList:
                 if triple[0] == self.measures.ground:
                     print("beacon: ", triple)
+
+            # Create path
+            posinicial = [13,27]
+            minpathlen = 27* 55
+            orderedlist = []
+            triple = []
+            aux_list = self.beaconCoordinateList.copy()
+            for j in range(len(aux_list), 0 ,-1):
+                for t in aux_list:
+                    coordinates = (t[1], t[2])
+                    path = pathfinder.search(self.astar_maze, 1, posinicial, coordinates)
+                    if len(path) < minpathlen:
+                        minpathlen = len(path)
+                        end = coordinates
+                        triple = t
+                orderedlist.append(end)
+                minpathlen = 27* 55
+                posinicial = end
+                aux_list.remove(triple)
+            orderedlist.append([13,27])
+            orderedlist.insert(0, [13,27])
+            self.finalpath = []
+            for i in range(len(orderedlist)-1):
+                path = pathfinder.search(self.astar_maze, 1, orderedlist[i], orderedlist[i+1])
+                self.finalpath = self.finalpath + path
+            self.finalpath = [v for i, v in enumerate(self.finalpath) if i == 0 or v != self.finalpath[i-1]]
+            self.writePathOutputFile()
         
     # Main function when the compass is 0
     def goingNorth(self):
@@ -482,11 +475,11 @@ class MyRob(CRobLinkAngs):
                 self.driveMotorsUpdate(0.0, 0.0)
                 xround = round(self.xpontoatual)
                 yround = round(self.ypontoatual)
-                self.drawMapNorth()
+                self.appendBeacon(xround, yround)
+                self.drawMapNorth(xround, yround)
                 self.evaluateNorth((xround, yround))
                 self.drawAstarMazeNorth((xround, yround))
                 self.findNextPoint()
-                self.appendBeacon(xround, yround)
                 self.yorigemmatriz = self.yorigemmatriz + 2
 
             else:
@@ -563,11 +556,11 @@ class MyRob(CRobLinkAngs):
                 self.driveMotorsUpdate(0.0, 0.0)
                 xround = round(self.xpontoatual)
                 yround = round(self.ypontoatual)
-                self.drawMapWest()
+                self.appendBeacon(xround, yround)
+                self.drawMapWest(xround, yround)
                 self.evaluateWest((xround, yround))
                 self.drawAstarMazeWest((xround, yround))
                 self.findNextPoint()
-                self.appendBeacon(xround, yround)
                 self.xorigemmatriz = self.xorigemmatriz - 2
 
             else:
@@ -644,11 +637,11 @@ class MyRob(CRobLinkAngs):
                 self.driveMotorsUpdate(0.0, 0.0)
                 xround = round(self.xpontoatual)
                 yround = round(self.ypontoatual)
-                self.drawMapSouth()
+                self.appendBeacon(xround, yround)
+                self.drawMapSouth(xround, yround)
                 self.evaluateSouth((xround, yround))
                 self.drawAstarMazeSouth((xround, yround))
                 self.findNextPoint()
-                self.appendBeacon(xround, yround)
                 self.yorigemmatriz = self.yorigemmatriz - 2
 
             else:
@@ -725,11 +718,11 @@ class MyRob(CRobLinkAngs):
                 self.driveMotorsUpdate(0.0, 0.0)
                 xround = round(self.xpontoatual)
                 yround = round(self.ypontoatual)
-                self.drawMapEast()
+                self.appendBeacon(xround, yround)
+                self.drawMapEast(xround, yround)
                 self.evaluateEast((xround, yround))
                 self.drawAstarMazeEast((xround, yround))
                 self.findNextPoint()
-                self.appendBeacon(xround, yround)
                 self.xorigemmatriz = self.xorigemmatriz + 2
 
             else:
@@ -769,10 +762,6 @@ class MyRob(CRobLinkAngs):
         if self.nosvisitados.count(point) == 0:
             self.nosvisitados.append(point)
         
-        if self.measures.irSensor[self.back_id] < 1.2:
-            if self.nosvisitados.count((point[0]-2, point[1])) == 0:
-                self.nosparavisitar.append((point[0]-2, point[1]))
-        
         if(self.measures.irSensor[self.left_id] < 1.2):
             if self.nosvisitados.count((point[0], point[1]+2)) == 0:
                 self.nosparavisitar.append((point[0], point[1]+2))
@@ -780,10 +769,14 @@ class MyRob(CRobLinkAngs):
         if(self.measures.irSensor[self.right_id] < 1.2):
             if self.nosvisitados.count((point[0], point[1]-2)) == 0:
                 self.nosparavisitar.append((point[0], point[1]-2))
-
+        
         if(self.measures.irSensor[self.center_id] < 1.2):
             if self.nosvisitados.count((point[0]+2, point[1])) == 0:
                 self.nosparavisitar.append((point[0]+2, point[1]))
+
+        if self.measures.irSensor[self.back_id] < 1.2:
+            if self.nosvisitados.count((point[0]-2, point[1])) == 0:
+                self.nosparavisitar.append((point[0]-2, point[1]))
 
         while self.nosparavisitar.count(point) > 0:
             self.nosparavisitar.remove(point)
@@ -795,17 +788,17 @@ class MyRob(CRobLinkAngs):
         if self.nosvisitados.count(point) == 0:
             self.nosvisitados.append(point)
         
-        if(self.measures.irSensor[self.center_id] < 1.2):
-            if self.nosvisitados.count((point[0], point[1]+2)) == 0:
-                self.nosparavisitar.append((point[0], point[1]+2))
+        if(self.measures.irSensor[self.left_id] < 1.2):
+            if self.nosvisitados.count((point[0]-2, point[1])) == 0:
+                self.nosparavisitar.append((point[0]-2, point[1]))
 
         if(self.measures.irSensor[self.right_id] < 1.2):
             if self.nosvisitados.count((point[0]+2, point[1])) == 0:
                 self.nosparavisitar.append((point[0]+2, point[1]))
 
-        if(self.measures.irSensor[self.left_id] < 1.2):
-            if self.nosvisitados.count((point[0]-2, point[1])) == 0:
-                self.nosparavisitar.append((point[0]-2, point[1]))
+        if(self.measures.irSensor[self.center_id] < 1.2):
+            if self.nosvisitados.count((point[0], point[1]+2)) == 0:
+                self.nosparavisitar.append((point[0], point[1]+2))
 
         if(self.measures.irSensor[self.back_id] < 1.2):
             if self.nosvisitados.count((point[0], point[1]-2)) == 0:
@@ -821,13 +814,13 @@ class MyRob(CRobLinkAngs):
         if self.nosvisitados.count(point) == 0:
             self.nosvisitados.append(point)
 
-        if(self.measures.irSensor[self.left_id] < 1.2):
-            if self.nosvisitados.count((point[0], point[1]-2)) == 0:
-                self.nosparavisitar.append((point[0], point[1]-2))
-
         if(self.measures.irSensor[self.right_id] < 1.2):
             if self.nosvisitados.count((point[0], point[1]+2)) == 0:
                 self.nosparavisitar.append((point[0], point[1]+2))
+
+        if(self.measures.irSensor[self.left_id] < 1.2):
+            if self.nosvisitados.count((point[0], point[1]-2)) == 0:
+                self.nosparavisitar.append((point[0], point[1]-2))
 
         if(self.measures.irSensor[self.center_id] < 1.2):
             if self.nosvisitados.count((point[0]-2, point[1])) == 0:
@@ -847,13 +840,13 @@ class MyRob(CRobLinkAngs):
         if self.nosvisitados.count(point) == 0:
             self.nosvisitados.append(point)
 
-        if(self.measures.irSensor[self.left_id] < 1.2):
-            if self.nosvisitados.count((point[0]+2, point[1])) == 0:
-                self.nosparavisitar.append((point[0]+2, point[1]))
-
         if(self.measures.irSensor[self.right_id] < 1.2):
             if self.nosvisitados.count((point[0]-2, point[1])) == 0:
                 self.nosparavisitar.append((point[0]-2, point[1]))
+
+        if(self.measures.irSensor[self.left_id] < 1.2):
+            if self.nosvisitados.count((point[0]+2, point[1])) == 0:
+                self.nosparavisitar.append((point[0]+2, point[1]))
 
         if(self.measures.irSensor[self.center_id] < 1.2):
             if self.nosvisitados.count((point[0], point[1]-2)) == 0:
@@ -867,7 +860,7 @@ class MyRob(CRobLinkAngs):
             self.nosparavisitar.remove(point)
 
     # Draw map outfile while going North 
-    def drawMapNorth(self):
+    def drawMapNorth(self, xround, yround):
 
         self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
 
@@ -888,13 +881,20 @@ class MyRob(CRobLinkAngs):
         else:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
 
-        if self.matrix[13][27] != "I":
+        if self.matrix[13][27] == "X":
             self.matrix[13][27] = "I"
 
-        self.writeOutputFiles()
+        for beacon in self.beaconCoordinateList:
+            id = beacon[0]
+            x = beacon[1]
+            y = beacon[2]
+            if (xround == x) and (yround == y):
+                self.matrix[self.xorigemmatriz][self.yorigemmatriz] = str(id)
+
+        self.writeMazesOutputFiles()
 
     # Draw map outfile while going West 
-    def drawMapWest(self):
+    def drawMapWest(self, xround, yround):
 
         self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
 
@@ -902,29 +902,33 @@ class MyRob(CRobLinkAngs):
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "-"
         else:
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "X"
-
         if self.measures.irSensor[self.left_id] > 1.2:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "|"
         else:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
-
         if self.measures.irSensor[self.right_id] > 1.2:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "|"
         else:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "X"
-
         if self.measures.irSensor[self.back_id] > 1.2:
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "-"
         else:
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "X"
 
-        if self.matrix[13][27] != "I":
+        if self.matrix[13][27] == "X":
             self.matrix[13][27] = "I"
 
-        self.writeOutputFiles()
+        for beacon in self.beaconCoordinateList:
+            id = beacon[0]
+            x = beacon[1]
+            y = beacon[2]
+            if (xround == x) and (yround == y):
+                self.matrix[self.xorigemmatriz][self.yorigemmatriz] = str(id)
+
+        self.writeMazesOutputFiles()
 
     # Draw map outfile while going South 
-    def drawMapSouth(self):
+    def drawMapSouth(self, xround, yround):
 
         self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
 
@@ -932,29 +936,33 @@ class MyRob(CRobLinkAngs):
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "|"
         else:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
-
         if self.measures.irSensor[self.left_id] > 1.2:
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "-"
         else:
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "X"
-
         if self.measures.irSensor[self.right_id] > 1.2:
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "-"
         else:
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "X"
-
         if self.measures.irSensor[self.back_id] > 1.2:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "|"
         else:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "X"
 
-        if self.matrix[13][27] != "I":
+        if self.matrix[13][27] == "X":
             self.matrix[13][27] = "I"
 
-        self.writeOutputFiles()
+        for beacon in self.beaconCoordinateList:
+            id = beacon[0]
+            x = beacon[1]
+            y = beacon[2]
+            if (xround == x) and (yround == y):
+                self.matrix[self.xorigemmatriz][self.yorigemmatriz] = str(id)
+
+        self.writeMazesOutputFiles()
 
     # Draw map outfile while going East 
-    def drawMapEast(self):
+    def drawMapEast(self, xround, yround):
 
         self.matrix[self.xorigemmatriz][self.yorigemmatriz] = "X"
 
@@ -962,26 +970,30 @@ class MyRob(CRobLinkAngs):
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "-"
         else:
             self.matrix[self.xorigemmatriz+1][self.yorigemmatriz] = "X"
-
         if self.measures.irSensor[self.left_id] > 1.2:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "|"
         else:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz+1] = "X"
-
         if self.measures.irSensor[self.right_id] > 1.2:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "|"
         else:
             self.matrix[self.xorigemmatriz][self.yorigemmatriz-1] = "X"
-
         if self.measures.irSensor[self.back_id] > 1.2:
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "-"
         else:
             self.matrix[self.xorigemmatriz-1][self.yorigemmatriz] = "X"
 
-        if self.matrix[13][27] != "I":
+        if self.matrix[13][27] == "X":
             self.matrix[13][27] = "I"
 
-        self.writeOutputFiles()
+        for beacon in self.beaconCoordinateList:
+            id = beacon[0]
+            x = beacon[1]
+            y = beacon[2]
+            if (xround == x) and (yround == y):
+                self.matrix[self.xorigemmatriz][self.yorigemmatriz] = str(id)
+
+        self.writeMazesOutputFiles()
     
     # Draw A* Maze while going North 
     def drawAstarMazeNorth(self, point):
@@ -1068,16 +1080,16 @@ class MyRob(CRobLinkAngs):
         self.nearestDirectionEstimate()
         self.sensorsCorrection()
 
-        testx = self.movement_model_x
-        testy = self.movement_model_y
+        # testx = self.movement_model_x
+        # testy = self.movement_model_y
             
         self.movement_model_x = (self.movement_model_x*(3/4)) + (self.sensors_x*(1/4))
         self.movement_model_y = (self.movement_model_y*(3/4)) + (self.sensors_y*(1/4))
 
         self.myCompass = round(math.degrees(self.movement_model_theta))
 
-        self.xpontoatual = round(self.movement_model_x, 2)
-        self.ypontoatual = round(self.movement_model_y, 2)
+        self.xpontoatual = round(self.movement_model_x, 1)
+        self.ypontoatual = round(self.movement_model_y, 1)
 
         if self.sensors_correction == True:
             self.sensors_correction = False
@@ -1300,23 +1312,43 @@ class MyRob(CRobLinkAngs):
         self.in_right = in_right
         self.driveMotors(self.in_left , self.in_right)
 
-    # Writing output files
-    def writeOutputFiles(self):
+    # Writing maze output files
+    def writeMazesOutputFiles(self):
         with open(outfilemap, 'w') as out:
                 for i in self.matrix:
                     out.write(''.join(i))
                     out.write('\n')
-
-        with open(outfilepath, 'w') as out:
-            for node in self.pathformatada:
-                out.write(str(node[0]) + ' ' +  str(node[1]))
-                out.write('\n')
         
-        with open('astar_map.txt', 'w') as out:
-            rotated = list(zip(*self.astar_maze))[::-1]
-            out.write('\n'.join([''.join(['{:}'.format(item) for item in row]) 
-                for row in rotated]))
-               
+        # with open('astar_map.txt', 'w') as out:
+        #     rotated = list(zip(*self.astar_maze))[::-1]
+        #     out.write('\n'.join([''.join(['{:}'.format(item) for item in row]) 
+        #         for row in rotated]))
+
+    # Writing maze output files
+    def writePathOutputFile(self):
+        
+        # print("finalpath: ", self.finalpath)
+
+        formated_path = []
+        for node in self.finalpath:
+            beacon_id = -1
+            for beacon in self.beaconCoordinateList:
+                if (node[0]==beacon[1]) and (node[1]==beacon[2]):
+                    beacon_id = beacon[0]
+            formated_point = (beacon_id, node[1]-27, -(node[0]-13))
+            formated_path.append(formated_point)
+
+        # print("formated_path: ", formated_path)
+        open(outfilepath, 'w').close()
+        with open(outfilepath, 'w') as out:
+            for node in formated_path:
+                if node[0] != -1:
+                    out.write(str(node[1]) + ' ' +  str(node[2]) + ' #' + str(node[0]))
+                    out.write('\n')
+                else:
+                    out.write(str(node[1]) + ' ' +  str(node[2]))
+                    out.write('\n')
+
 class Map():
     def __init__(self, filename):
         tree = ET.parse(filename)
