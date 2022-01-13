@@ -126,7 +126,6 @@ class MyRob(CRobLinkAngs):
 
     # Main function       
     def main(self):
-        # print("\n########################################################################")
 
         if ((len(self.nosparavisitar) == 0) or (self.measures.time >= 5000)) and self.end == False:
             self.checkEnd()
@@ -141,12 +140,9 @@ class MyRob(CRobLinkAngs):
                 self.goingSouth()
             elif self.direcao == "East":
                 self.goingEast()
-            
-        # print("########################################################################")
     
     # Robot movement when it needs to deviate to its left
     def auxGoLeft(self):
-        # print("left")
         difBetWeenTarget = 0
         difToCellCenter = 0
         inX = 0.000
@@ -158,32 +154,31 @@ class MyRob(CRobLinkAngs):
         elif self.direcao == "West" or self.direcao == "East":
             difBetWeenTarget = abs((self.ypontoatual) - (self.yorigemtransformada))
             difToCellCenter = abs((self.xpontoatual) - (round(self.xpontoatual)))
-        
-        # print("go left")
-        # print("difBetWeenTarget: ", difBetWeenTarget)
-        # print("difToCellCenter: ", difToCellCenter)
 
-        if  difToCellCenter >= 0.30:
-            # print("3")
+        if  difToCellCenter >= 0.25:
             inX = 0.120
-        elif  difToCellCenter >= 0.20:
-            # print("2")
+        elif  difToCellCenter >= 0.15:
             inX = 0.135
-        elif difToCellCenter >= 0.15:
-            # print("1")
+        elif difToCellCenter >= 0.10:
             inX = 0.140
-        else:
-            # print("0")
+        elif difToCellCenter >= 0.05:
             inX = 0.145
+        else:
+            inX = 0.149
         
-        if difBetWeenTarget <= 0.3:
-            self.driveMotorsUpdate(inX/10,inY/10)
+        if (difBetWeenTarget) < 0.4:
+            self.driveMotorsUpdate(inX/4,inY/4)
+        elif (difBetWeenTarget) < 0.3:
+            self.driveMotorsUpdate(inX/8,inY/8)
+        elif (difBetWeenTarget) < 0.2:
+            self.driveMotorsUpdate(inX/16,inY/16)
+        elif (difBetWeenTarget) < 0.1:
+            self.driveMotorsUpdate(inX/32,inY/32)
         else:
             self.driveMotorsUpdate(inX,inY)
 
     # Robot movement when it needs to deviate to its right
     def auxGoRight(self):
-        # print("right")
         difBetWeenTarget = 0
         difToCellCenter = 0
         inX = 0.150
@@ -195,52 +190,53 @@ class MyRob(CRobLinkAngs):
         elif self.direcao == "West" or self.direcao == "East":
             difBetWeenTarget = abs((self.ypontoatual) - (self.yorigemtransformada))
             difToCellCenter = abs((self.xpontoatual) - (round(self.xpontoatual)))
-        
-        # print("go right")
-        # print("difBetWeenTarget: ", difBetWeenTarget)
-        # print("difToCellCenter: ", difToCellCenter)
 
-        if  difToCellCenter >= 0.30:
-            # print("3")
+        if  difToCellCenter >= 0.25:
             inY = 0.120
-        elif  difToCellCenter >= 0.20:
-            # print("2")
+        elif  difToCellCenter >= 0.15:
             inY = 0.135
-        elif difToCellCenter >= 0.15:
-            # print("1")
+        elif difToCellCenter >= 0.10:
             inY = 0.140
-        else:
-            # print("0")
+        elif difToCellCenter >= 0.05:
             inY = 0.145
+        else:
+            inY = 0.149
         
-        if difBetWeenTarget <= 0.3:
-            self.driveMotorsUpdate(inX/10,inY/10)
+        if (difBetWeenTarget) < 0.4:
+            self.driveMotorsUpdate(inX/4,inY/4)
+        elif (difBetWeenTarget) < 0.3:
+            self.driveMotorsUpdate(inX/8,inY/8)
+        elif (difBetWeenTarget) < 0.2:
+            self.driveMotorsUpdate(inX/16,inY/16)
+        elif (difBetWeenTarget) < 0.1:
+            self.driveMotorsUpdate(inX/32,inY/32)
         else:
             self.driveMotorsUpdate(inX,inY)
 
     # Robot movement when it needs to go forward
     def auxGoFront(self):
-        # print("front")
         inX = 0.150
         inY = 0.150
         
-        dif = 0
+        difBetWeenTarget = 0
         if self.direcao == "North" or self.direcao == "South":
-            dif = abs((self.xpontoatual) - (self.xorigemtransformada))
+            difBetWeenTarget = abs((self.xpontoatual) - (self.xorigemtransformada))
         elif self.direcao == "West" or self.direcao == "East":
-            dif = abs((self.ypontoatual) - (self.yorigemtransformada))
-        # print("go front")
-        # print("la difrenca: ", dif)
+            difBetWeenTarget = abs((self.ypontoatual) - (self.yorigemtransformada))
 
-        if (dif) <= 0.3:
-            self.driveMotorsUpdate(inX/10,inY/10)
+        if (difBetWeenTarget) < 0.4:
+            self.driveMotorsUpdate(inX/4,inY/4)
+        elif (difBetWeenTarget) < 0.3:
+            self.driveMotorsUpdate(inX/8,inY/8)
+        elif (difBetWeenTarget) < 0.2:
+            self.driveMotorsUpdate(inX/16,inY/16)
+        elif (difBetWeenTarget) < 0.1:
+            self.driveMotorsUpdate(inX/32,inY/32)
         else:
             self.driveMotorsUpdate(inX,inY)
 
     # Robot movement when it needs to go backwards
     def auxGoBack(self):
-
-        # print("ja passei")
         # print("go back")
         self.driveMotorsUpdate(-0.01,-0.01)
 
@@ -468,7 +464,7 @@ class MyRob(CRobLinkAngs):
                 else:
                     self.auxRotateSouth()
     
-        elif self.xpontoatual == (self.xorigemtransformada):
+        elif round(self.xpontoatual,1) == (self.xorigemtransformada):
             
             if self.myCompass == 0:
                 # print("celula")
@@ -488,7 +484,7 @@ class MyRob(CRobLinkAngs):
                 elif self.myCompass < 0:
                     self.driveMotorsUpdate(-0.01, 0.01)
             
-        elif self.xpontoatual != (self.xorigemtransformada):
+        elif round(self.xpontoatual,1) != (self.xorigemtransformada):
 
             # print("andar")
             
@@ -549,7 +545,7 @@ class MyRob(CRobLinkAngs):
                 else:
                     self.auxRotateEast()
 
-        elif self.ypontoatual == (self.yorigemtransformada):
+        elif round(self.ypontoatual,1) == (self.yorigemtransformada):
 
             if self.myCompass == 90:     
                 # print("celula")
@@ -569,7 +565,7 @@ class MyRob(CRobLinkAngs):
                 elif self.myCompass < 90:
                     self.driveMotorsUpdate(-0.01, 0.01)
 
-        elif self.ypontoatual != (self.yorigemtransformada):
+        elif round(self.ypontoatual,1) != (self.yorigemtransformada):
             
             # print("andar")
 
@@ -630,7 +626,7 @@ class MyRob(CRobLinkAngs):
                 else:
                     self.auxRotateNorth()
 
-        elif self.xpontoatual == (self.xorigemtransformada):
+        elif round(self.xpontoatual,1) == (self.xorigemtransformada):
             
             if (self.myCompass == 180) or (self.myCompass == -180):
                 # print("celula")
@@ -650,7 +646,7 @@ class MyRob(CRobLinkAngs):
                 elif (self.myCompass > 0) and (self.myCompass < 180):
                     self.driveMotorsUpdate(-0.01, 0.01)
 
-        elif self.xpontoatual != (self.xorigemtransformada):
+        elif round(self.xpontoatual,1) != (self.xorigemtransformada):
             
             # print("andar")
 
@@ -711,7 +707,7 @@ class MyRob(CRobLinkAngs):
                 else:
                     self.auxRotateWest()
 
-        elif self.ypontoatual == (self.yorigemtransformada):
+        elif round(self.ypontoatual,1) == (self.yorigemtransformada):
             
             if self.myCompass == -90:
                 # print("celula")
@@ -731,7 +727,7 @@ class MyRob(CRobLinkAngs):
                 elif self.myCompass < -90:
                     self.driveMotorsUpdate(-0.01, 0.01)
 
-        elif self.ypontoatual != (self.yorigemtransformada):
+        elif round(self.ypontoatual,1) != (self.yorigemtransformada):
             
             # print("andar")
 
@@ -761,7 +757,7 @@ class MyRob(CRobLinkAngs):
 
         if self.nosvisitados.count(point) == 0:
             self.nosvisitados.append(point)
-        
+
         if(self.measures.irSensor[self.left_id] < 1.2):
             if self.nosvisitados.count((point[0], point[1]+2)) == 0:
                 self.nosparavisitar.append((point[0], point[1]+2))
@@ -787,7 +783,7 @@ class MyRob(CRobLinkAngs):
 
         if self.nosvisitados.count(point) == 0:
             self.nosvisitados.append(point)
-        
+
         if(self.measures.irSensor[self.left_id] < 1.2):
             if self.nosvisitados.count((point[0]-2, point[1])) == 0:
                 self.nosparavisitar.append((point[0]-2, point[1]))
@@ -1083,13 +1079,16 @@ class MyRob(CRobLinkAngs):
         # testx = self.movement_model_x
         # testy = self.movement_model_y
             
-        self.movement_model_x = (self.movement_model_x*(3/4)) + (self.sensors_x*(1/4))
-        self.movement_model_y = (self.movement_model_y*(3/4)) + (self.sensors_y*(1/4))
+        # self.movement_model_x = (self.movement_model_x*(3/4)) + (self.sensors_x*(1/4))
+        # self.movement_model_y = (self.movement_model_y*(3/4)) + (self.sensors_y*(1/4))
+
+        self.movement_model_x = self.sensors_x
+        self.movement_model_y = self.sensors_y
 
         self.myCompass = round(math.degrees(self.movement_model_theta))
 
-        self.xpontoatual = round(self.movement_model_x, 1)
-        self.ypontoatual = round(self.movement_model_y, 1)
+        self.xpontoatual = round(self.movement_model_x, 2)
+        self.ypontoatual = round(self.movement_model_y, 2)
 
         if self.sensors_correction == True:
             self.sensors_correction = False
@@ -1152,7 +1151,7 @@ class MyRob(CRobLinkAngs):
         # Direction N
         if self.closest_direction == "N":
             # Front correction
-            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 3.2:
+            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 3.4:
                 # print("\nFront correction")
                 self.sensors_correction = True
                 closest_x_wall_distance = 1/self.measures.irSensor[0]
@@ -1160,7 +1159,7 @@ class MyRob(CRobLinkAngs):
                 self.sensors_x = closest_x_wall_coordinate - self.wall_diameter - closest_x_wall_distance - self.robot_radius
 
             # Back correction
-            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 3.2:
+            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 3.4:
                # print("\nBack correction")
                 self.sensors_correction = True
                 closest_x_wall_distance = 1/self.measures.irSensor[3]
@@ -1168,7 +1167,7 @@ class MyRob(CRobLinkAngs):
                 self.sensors_x = closest_x_wall_coordinate + self.wall_diameter + closest_x_wall_distance + self.robot_radius
 
             # Left correction
-            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 3.2:
+            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 3.4:
                # print("\nLeft correction")
                 self.sensors_correction = True
                 closest_y_wall_distance = 1/self.measures.irSensor[1]
@@ -1176,7 +1175,7 @@ class MyRob(CRobLinkAngs):
                 self.sensors_y = closest_y_wall_coordinate - self.wall_diameter - closest_y_wall_distance - self.robot_radius
 
             # Right correction
-            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 3.2:
+            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 3.4:
                 # print("\nRight correction")
                 self.sensors_correction = True
                 closest_y_wall_distance = 1/self.measures.irSensor[2]
@@ -1187,7 +1186,7 @@ class MyRob(CRobLinkAngs):
         elif self.closest_direction == "S":
             
             # Front correction
-            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 3.2:
+            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 3.4:
                 # print("\nFront correction")
                 self.sensors_correction = True
                 closest_x_wall_distance = 1/self.measures.irSensor[0]
@@ -1195,7 +1194,7 @@ class MyRob(CRobLinkAngs):
                 self.sensors_x = closest_x_wall_coordinate + self.wall_diameter + closest_x_wall_distance + self.robot_radius
 
             # Back correction
-            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 3.2:
+            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 3.4:
                # print("\nBack correction")
                 self.sensors_correction = True
                 closest_x_wall_distance = 1/self.measures.irSensor[3]
@@ -1203,7 +1202,7 @@ class MyRob(CRobLinkAngs):
                 self.sensors_x = closest_x_wall_coordinate - self.wall_diameter - closest_x_wall_distance - self.robot_radius
 
             # Left correction
-            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 3.2:
+            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 3.4:
                # print("\nLeft correction")
                 self.sensors_correction = True
                 closest_y_wall_distance = 1/self.measures.irSensor[1]
@@ -1211,7 +1210,7 @@ class MyRob(CRobLinkAngs):
                 self.sensors_y = closest_y_wall_coordinate + self.wall_diameter + closest_y_wall_distance + self.robot_radius
 
             # Right correction
-            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 3.2:
+            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 3.4:
                 # print("\nRight correction")
                 self.sensors_correction = True
                 closest_y_wall_distance = 1/self.measures.irSensor[2]
@@ -1222,7 +1221,7 @@ class MyRob(CRobLinkAngs):
         elif self.closest_direction == "W":
             
             # Front correction
-            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 3.2:
+            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 3.4:
                 # print("\nFront correction")
                 self.sensors_correction = True
                 closest_y_wall_distance = 1/self.measures.irSensor[0]
@@ -1230,7 +1229,7 @@ class MyRob(CRobLinkAngs):
                 self.sensors_y = closest_y_wall_coordinate - self.wall_diameter - closest_x_wall_distance - self.robot_radius
 
             # Back correction
-            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 3.2:
+            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 3.4:
                # print("\nBack correction")
                 self.sensors_correction = True
                 closest_y_wall_distance = 1/self.measures.irSensor[3]
@@ -1238,7 +1237,7 @@ class MyRob(CRobLinkAngs):
                 self.sensors_y = closest_y_wall_coordinate + self.wall_diameter + closest_y_wall_distance + self.robot_radius
 
             # Left correction
-            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 3.2:
+            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 3.4:
                # print("\nLeft correction")
                 self.sensors_correction = True
                 closest_x_wall_distance = 1/self.measures.irSensor[1]
@@ -1246,7 +1245,7 @@ class MyRob(CRobLinkAngs):
                 self.sensors_x = closest_x_wall_coordinate + self.wall_diameter + closest_x_wall_distance + self.robot_radius
 
             # Right correction
-            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 3.2:
+            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 3.4:
                 # print("\nRight correction")
                 self.sensors_correction = True
                 closest_x_wall_distance = 1/self.measures.irSensor[2]
@@ -1257,7 +1256,7 @@ class MyRob(CRobLinkAngs):
         elif self.closest_direction == "E":
             
             # Front correction
-            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 3.2:
+            if (self.measures.irSensor[0] > self.measures.irSensor[3]) and self.measures.irSensor[0] > 3.4:
                 # print("\nFront correction")
                 self.sensors_correction = True
                 closest_y_wall_distance = 1/self.measures.irSensor[0]
@@ -1265,7 +1264,7 @@ class MyRob(CRobLinkAngs):
                 self.sensors_y = closest_y_wall_coordinate + self.wall_diameter + closest_y_wall_distance + self.robot_radius
 
             # Back correction
-            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 3.2:
+            elif (self.measures.irSensor[0] < self.measures.irSensor[3]) and self.measures.irSensor[3] > 3.4:
                # print("\nBack correction")
                 self.sensors_correction = True
                 closest_y_wall_distance = 1/self.measures.irSensor[3]
@@ -1273,7 +1272,7 @@ class MyRob(CRobLinkAngs):
                 self.sensors_y = closest_y_wall_coordinate - self.wall_diameter - closest_y_wall_distance - self.robot_radius
 
             # Left correction
-            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 3.2:
+            if (self.measures.irSensor[1] > self.measures.irSensor[2]) and self.measures.irSensor[1] > 3.4:
                # print("\nLeft correction")
                 self.sensors_correction = True
                 closest_x_wall_distance = 1/self.measures.irSensor[1]
@@ -1281,7 +1280,7 @@ class MyRob(CRobLinkAngs):
                 self.sensors_x = closest_x_wall_coordinate - self.wall_diameter - closest_x_wall_distance - self.robot_radius
 
             # Right correction
-            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 3.2:
+            elif (self.measures.irSensor[1] < self.measures.irSensor[2]) and self.measures.irSensor[2] > 3.4:
                 # print("\nRight correction")
                 self.sensors_correction = True
                 closest_x_wall_distance = 1/self.measures.irSensor[2]
