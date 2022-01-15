@@ -3,7 +3,7 @@
 		<Target X="3" Y="11.0" Radius="1.0"/>
 		<Beacon X="17" Y="7.0" Height="4.0"/>
 		<Target X="17" Y="7.0" Radius="1.0"/>
-      	<Beacon X="3" Y="3.0" Height="4.0"/>
+      <Beacon X="3" Y="3.0" Height="4.0"/>
 		<Target X="3" Y="3.0" Radius="1.0"/>
 		<Beacon X="25" Y="9.0" Height="4.0"/>
 		<Target X="25" Y="9.0" Radius="1.0"/>
@@ -21,3 +21,4 @@
 		<Row  Pos="1"  Pattern="  +  +  +  +--+--+  +--+--+  +--+--+--+  "  />
 		<Row  Pos="0"  Pattern="                 |                       "  />
 </Lab>
+

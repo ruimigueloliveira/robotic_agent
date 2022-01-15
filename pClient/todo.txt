@@ -1,0 +1,22 @@
+pull github
+testar ficheiros de saida
+usar o symtime do simulador
+voltar a posicao inicial no fim (finish tem de ser feito o finish na posicao inicial)
+alterar sinais e ordem da path
+para o path final fazer todas as combinacoes (utilizar biblioteca)
+
+
+relatorio
+1. apresentar contexto
+2. apresentar solucao
+    qual a solucao escolhida? porque?
+    principio de funcionamento? vantagens e desvantagens?
+3. quantificar os resultados
+    utilizar indicadores para medir desenpenho
+
+(Abstract)
+Introduction
+Methodology
+Resuls
+Discussions
+(Conclusions)

@@ -166,14 +166,10 @@ class MyRob(CRobLinkAngs):
         else:
             inX = 0.149
         
-        if (difBetWeenTarget) < 0.4:
+        if (difBetWeenTarget) < 0.2:
             self.driveMotorsUpdate(inX/4,inY/4)
-        elif (difBetWeenTarget) < 0.3:
-            self.driveMotorsUpdate(inX/8,inY/8)
-        elif (difBetWeenTarget) < 0.2:
-            self.driveMotorsUpdate(inX/16,inY/16)
         elif (difBetWeenTarget) < 0.1:
-            self.driveMotorsUpdate(inX/32,inY/32)
+            self.driveMotorsUpdate(inX/8,inY/8)
         else:
             self.driveMotorsUpdate(inX,inY)
 
@@ -202,14 +198,10 @@ class MyRob(CRobLinkAngs):
         else:
             inY = 0.149
         
-        if (difBetWeenTarget) < 0.4:
+        if (difBetWeenTarget) < 0.2:
             self.driveMotorsUpdate(inX/4,inY/4)
-        elif (difBetWeenTarget) < 0.3:
-            self.driveMotorsUpdate(inX/8,inY/8)
-        elif (difBetWeenTarget) < 0.2:
-            self.driveMotorsUpdate(inX/16,inY/16)
         elif (difBetWeenTarget) < 0.1:
-            self.driveMotorsUpdate(inX/32,inY/32)
+            self.driveMotorsUpdate(inX/8,inY/8)
         else:
             self.driveMotorsUpdate(inX,inY)
 
@@ -224,34 +216,30 @@ class MyRob(CRobLinkAngs):
         elif self.direcao == "West" or self.direcao == "East":
             difBetWeenTarget = abs((self.ypontoatual) - (self.yorigemtransformada))
 
-        if (difBetWeenTarget) < 0.4:
+        if (difBetWeenTarget) < 0.2:
             self.driveMotorsUpdate(inX/4,inY/4)
-        elif (difBetWeenTarget) < 0.3:
-            self.driveMotorsUpdate(inX/8,inY/8)
-        elif (difBetWeenTarget) < 0.2:
-            self.driveMotorsUpdate(inX/16,inY/16)
         elif (difBetWeenTarget) < 0.1:
-            self.driveMotorsUpdate(inX/32,inY/32)
+            self.driveMotorsUpdate(inX/8,inY/8)
         else:
             self.driveMotorsUpdate(inX,inY)
 
     # Robot movement when it needs to go backwards
     def auxGoBack(self):
-        # print("go back")
+        print("go back")
         self.driveMotorsUpdate(-0.01,-0.01)
 
     # Robot movement when it needs to rotate North
     def auxRotateNorth(self):
         if self.myCompass >= -180 and self.myCompass < 0:
             if self.myCompass >= 0-5:
-                self.driveMotorsUpdate(-0.001, 0.001)
+                self.driveMotorsUpdate(-0.005, 0.005)
             elif self.myCompass >= 0-25:
                 self.driveMotorsUpdate(-0.010, 0.010)
             else:
                 self.driveMotorsUpdate(-0.150, 0.150)
         elif self.myCompass <= 180 and self.myCompass > 0:
             if self.myCompass <= 0+5:
-                self.driveMotorsUpdate(0.001, -0.001)
+                self.driveMotorsUpdate(0.005, -0.005)
             elif self.myCompass <= 0+25:
                 self.driveMotorsUpdate(0.010, -0.010)
             else:
@@ -261,14 +249,14 @@ class MyRob(CRobLinkAngs):
     def auxRotateWest(self):
         if self.myCompass >= -180 and self.myCompass < 90:
             if self.myCompass >= 90-5:
-                self.driveMotorsUpdate(-0.001, 0.001)
+                self.driveMotorsUpdate(-0.005, 0.005)
             elif self.myCompass >= 90-25:
                 self.driveMotorsUpdate(-0.010, 0.010)
             else:
                 self.driveMotorsUpdate(-0.150, 0.150)
         elif self.myCompass <= 180 and self.myCompass > 90:
             if self.myCompass <= 90+5:
-                self.driveMotorsUpdate(0.001, -0.001)
+                self.driveMotorsUpdate(0.005, -0.005)
             elif self.myCompass <= 90+25:
                 self.driveMotorsUpdate(0.010, -0.010)
             else:
@@ -280,14 +268,14 @@ class MyRob(CRobLinkAngs):
     def auxRotateSouth(self):
         if self.myCompass >= 0 and self.myCompass < 180:
             if self.myCompass >= 180-5:
-                self.driveMotorsUpdate(-0.001, 0.001)
+                self.driveMotorsUpdate(-0.005, 0.005)
             elif self.myCompass >= 180-25:
                 self.driveMotorsUpdate(-0.010, 0.010)
             else:
                 self.driveMotorsUpdate(-0.150, 0.150)
         elif self.myCompass <= 0 and self.myCompass > -180:
             if self.myCompass <= -180+5:
-                self.driveMotorsUpdate(0.001, -0.001)
+                self.driveMotorsUpdate(0.005, -0.005)
             elif self.myCompass <= -180+25:
                 self.driveMotorsUpdate(0.010, -0.010)
             else:
@@ -299,14 +287,14 @@ class MyRob(CRobLinkAngs):
     def auxRotateEast(self):
         if self.myCompass >= -180 and self.myCompass < -90:
             if self.myCompass >= -90-5:
-                self.driveMotorsUpdate(-0.001, 0.001)
+                self.driveMotorsUpdate(-0.005, 0.005)
             elif self.myCompass >= -90-25:
                 self.driveMotorsUpdate(-0.010, 0.010)
             else:
                 self.driveMotorsUpdate(-0.150, 0.150)
         elif self.myCompass <= 180 and self.myCompass > -90:
             if self.myCompass <= -90+5:
-                self.driveMotorsUpdate(0.001, -0.001)
+                self.driveMotorsUpdate(0.005, -0.005)
             elif self.myCompass <= -90+25:
                 self.driveMotorsUpdate(0.010, -0.010)
             else:
@@ -464,11 +452,11 @@ class MyRob(CRobLinkAngs):
                 else:
                     self.auxRotateSouth()
     
-        elif round(self.xpontoatual,1) == (self.xorigemtransformada):
+        elif (self.xpontoatual > self.xorigemtransformada - 0.1) and (self.xpontoatual < self.xorigemtransformada + 0.1):
             
-            if self.myCompass == 0:
+            if self.myCompass < 0+5 and self.myCompass > 0-5:
                 # print("celula")
-                self.driveMotorsUpdate(0.0, 0.0)
+                # self.driveMotorsUpdate(0.0, 0.0)
                 xround = round(self.xpontoatual)
                 yround = round(self.ypontoatual)
                 self.appendBeacon(xround, yround)
@@ -484,7 +472,7 @@ class MyRob(CRobLinkAngs):
                 elif self.myCompass < 0:
                     self.driveMotorsUpdate(-0.01, 0.01)
             
-        elif round(self.xpontoatual,1) != (self.xorigemtransformada):
+        else:
 
             # print("andar")
             
@@ -545,11 +533,11 @@ class MyRob(CRobLinkAngs):
                 else:
                     self.auxRotateEast()
 
-        elif round(self.ypontoatual,1) == (self.yorigemtransformada):
+        elif (self.ypontoatual > self.yorigemtransformada - 0.1) and (self.ypontoatual < self.yorigemtransformada + 0.1):
 
-            if self.myCompass == 90:     
+            if self.myCompass < 90+5 and self.myCompass > 90-5:   
                 # print("celula")
-                self.driveMotorsUpdate(0.0, 0.0)
+                # self.driveMotorsUpdate(0.0, 0.0)
                 xround = round(self.xpontoatual)
                 yround = round(self.ypontoatual)
                 self.appendBeacon(xround, yround)
@@ -565,7 +553,7 @@ class MyRob(CRobLinkAngs):
                 elif self.myCompass < 90:
                     self.driveMotorsUpdate(-0.01, 0.01)
 
-        elif round(self.ypontoatual,1) != (self.yorigemtransformada):
+        else:
             
             # print("andar")
 
@@ -626,11 +614,11 @@ class MyRob(CRobLinkAngs):
                 else:
                     self.auxRotateNorth()
 
-        elif round(self.xpontoatual,1) == (self.xorigemtransformada):
+        elif (self.xpontoatual > self.xorigemtransformada - 0.1) and (self.xpontoatual < self.xorigemtransformada + 0.1):
             
-            if (self.myCompass == 180) or (self.myCompass == -180):
+            if (self.myCompass < 180+5 and self.myCompass > 180-5) or (self.myCompass < -180+5 and self.myCompass > -180-5):
                 # print("celula")
-                self.driveMotorsUpdate(0.0, 0.0)
+                # self.driveMotorsUpdate(0.0, 0.0)
                 xround = round(self.xpontoatual)
                 yround = round(self.ypontoatual)
                 self.appendBeacon(xround, yround)
@@ -646,7 +634,7 @@ class MyRob(CRobLinkAngs):
                 elif (self.myCompass > 0) and (self.myCompass < 180):
                     self.driveMotorsUpdate(-0.01, 0.01)
 
-        elif round(self.xpontoatual,1) != (self.xorigemtransformada):
+        else:
             
             # print("andar")
 
@@ -707,11 +695,11 @@ class MyRob(CRobLinkAngs):
                 else:
                     self.auxRotateWest()
 
-        elif round(self.ypontoatual,1) == (self.yorigemtransformada):
+        elif (self.ypontoatual > self.yorigemtransformada - 0.1) and (self.ypontoatual < self.yorigemtransformada + 0.1):
             
-            if self.myCompass == -90:
+            if self.myCompass < -90+5 and self.myCompass > -90-5:
                 # print("celula")
-                self.driveMotorsUpdate(0.0, 0.0)
+                # self.driveMotorsUpdate(0.0, 0.0)
                 xround = round(self.xpontoatual)
                 yround = round(self.ypontoatual)
                 self.appendBeacon(xround, yround)
@@ -727,7 +715,7 @@ class MyRob(CRobLinkAngs):
                 elif self.myCompass < -90:
                     self.driveMotorsUpdate(-0.01, 0.01)
 
-        elif round(self.ypontoatual,1) != (self.yorigemtransformada):
+        else:
             
             # print("andar")
 
@@ -1006,7 +994,6 @@ class MyRob(CRobLinkAngs):
         if(self.measures.irSensor[self.back_id] < 1.2):
             self.astar_maze[point[0]-1][point[1]] = 0
             self.astar_maze[point[0]-2][point[1]] = 0
-        # self.printAstarMaze()
     
     # Draw A* Maze while going West 
     def drawAstarMazeWest(self, point):
@@ -1023,7 +1010,6 @@ class MyRob(CRobLinkAngs):
         if(self.measures.irSensor[self.back_id] < 1.2):
             self.astar_maze[point[0]][point[1]-1] = 0
             self.astar_maze[point[0]][point[1]-2] = 0
-        # self.printAstarMaze()
 
     # Draw A* Maze while going South
     def drawAstarMazeSouth(self, point):
@@ -1040,7 +1026,6 @@ class MyRob(CRobLinkAngs):
         if(self.measures.irSensor[self.back_id] < 1.2):
             self.astar_maze[point[0]+1][point[1]] = 0
             self.astar_maze[point[0]+2][point[1]] = 0
-        # self.printAstarMaze()
             
     # Draw A* Maze while going East 
     def drawAstarMazeEast(self, point):
@@ -1057,7 +1042,6 @@ class MyRob(CRobLinkAngs):
         if(self.measures.irSensor[self.back_id] < 1.2):
             self.astar_maze[point[0]][point[1]+1] = 0
             self.astar_maze[point[0]][point[1]+2] = 0
-        # self.printAstarMaze()
             
     # Print Astar Maze
     def printAstarMaze(self):
