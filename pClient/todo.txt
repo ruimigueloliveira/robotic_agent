@@ -1,7 +1,5 @@
-pull github
+
 testar ficheiros de saida
-usar o symtime do simulador
-voltar a posicao inicial no fim (finish tem de ser feito o finish na posicao inicial)
 alterar sinais e ordem da path
 para o path final fazer todas as combinacoes (utilizar biblioteca)
 
