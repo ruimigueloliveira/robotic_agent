@@ -4,6 +4,7 @@ from math import *
 import xml.etree.ElementTree as ET
 import math
 import pathfinder
+import itertools
 
 CELLROWS=7
 CELLCOLS=14
@@ -48,6 +49,7 @@ class MyRob(CRobLinkAngs):
     beaconCoordinateList = []
     finalpath = []
     sensors_correction = False
+    end = False
 
     def __init__(self, rob_name, rob_id, angles, host):
         CRobLinkAngs.__init__(self, rob_name, rob_id, angles, host)
@@ -126,18 +128,21 @@ class MyRob(CRobLinkAngs):
     # Main function       
     def main(self):
 
-        
-        self.checkEnd()
-        self.localization()
+        if self.end == False:
 
-        if self.direcao == "North":
-            self.goingNorth()
-        elif self.direcao == "West":
-            self.goingWest()
-        elif self.direcao == "South":
-            self.goingSouth()
-        elif self.direcao == "East":
-            self.goingEast()
+            self.checkEnd()
+            self.localization()
+
+            if self.direcao == "North":
+                self.goingNorth()
+            elif self.direcao == "West":
+                self.goingWest()
+            elif self.direcao == "South":
+                self.goingSouth()
+            elif self.direcao == "East":
+                self.goingEast()
+        else:
+            self.finish()
     
     # Robot movement when it needs to deviate to its left
     def auxGoLeft(self):
@@ -324,10 +329,6 @@ class MyRob(CRobLinkAngs):
             self.writePathOutputFile()
             self.writeMazesOutputFiles()
             self.finish()
-        
-        
-
-            
 
     # Find next point based on A* algorithm
     def findNextPoint(self):
@@ -389,14 +390,14 @@ class MyRob(CRobLinkAngs):
                 print("tempo restante: ", abs(self.measures.time - int(self.simTime)))
 
                 self.writePathOutputFile()
-                self.writeMazesOutputFiles()
+                self.end = True
                 self.finish()
 
             else:
                 print("\ntodas as posicoes foram descobertas mas nao estou na posicao inicial")
                 self.nosparavisitar.append((13,27))
+                self.writePathOutputFile()
                 self.findNextPoint()
-
 
     # Checks if the current position is a beacon and adds its coordinate to a list
     def appendBeacon(self, xround, yround):
@@ -407,34 +408,8 @@ class MyRob(CRobLinkAngs):
             for triple in self.beaconCoordinateList:
                 if triple[0] == self.measures.ground:
                     print("beacon: ", triple)
-
-            # Create path
-            posinicial = [13,27]
-            minpathlen = 27* 55
-            orderedlist = []
-            triple = []
-            aux_list = self.beaconCoordinateList.copy()
-            for j in range(len(aux_list), 0 ,-1):
-                for t in aux_list:
-                    coordinates = (t[1], t[2])
-                    path = pathfinder.search(self.astar_maze, 1, posinicial, coordinates)
-                    if len(path) < minpathlen:
-                        minpathlen = len(path)
-                        end = coordinates
-                        triple = t
-                orderedlist.append(end)
-                minpathlen = 27* 55
-                posinicial = end
-                aux_list.remove(triple)
-            orderedlist.append([13,27])
-            orderedlist.insert(0, [13,27])
-            self.finalpath = []
-            for i in range(len(orderedlist)-1):
-                path = pathfinder.search(self.astar_maze, 1, orderedlist[i], orderedlist[i+1])
-                self.finalpath = self.finalpath + path
-            self.finalpath = [v for i, v in enumerate(self.finalpath) if i == 0 or v != self.finalpath[i-1]]
-            self.writePathOutputFile()
-        
+            self.writePathOutputFile()  
+            
     # Main function when the compass is 0
     def goingNorth(self):
 
@@ -1300,7 +1275,28 @@ class MyRob(CRobLinkAngs):
     # Writing maze output files
     def writePathOutputFile(self):
         
-        # print("finalpath: ", self.finalpath)
+        all_beacons_permutations = list(itertools.permutations(self.beaconCoordinateList))
+
+        minpathlen = 27* 55
+        for list_combination in all_beacons_permutations:
+            beacons_list_coordinates = []
+
+            for i in range(len(list_combination)):
+                beacon = list_combination[i]
+                point = beacon[1], beacon[2]
+                beacons_list_coordinates.append(point)
+
+            beacons_list_coordinates.append(beacons_list_coordinates[0])
+
+            if beacons_list_coordinates[0] == (13,27):
+                path = []
+                for i in range(len(beacons_list_coordinates)-1):
+                    p = pathfinder.search(self.astar_maze, 1, beacons_list_coordinates[i], beacons_list_coordinates[i+1])
+                    path = path + p
+                path = [v for i, v in enumerate(path) if i == 0 or v != path[i-1]]
+                if len(path) < minpathlen:
+                    minpathlen = len(path)
+                    self.finalpath = path
 
         formated_path = []
         for node in self.finalpath:
@@ -1308,10 +1304,9 @@ class MyRob(CRobLinkAngs):
             for beacon in self.beaconCoordinateList:
                 if (node[0]==beacon[1]) and (node[1]==beacon[2]):
                     beacon_id = beacon[0]
-            formated_point = (beacon_id, node[1]-27, -(node[0]-13))
+            formated_point = (beacon_id, node[0]-13, node[1]-27)
             formated_path.append(formated_point)
 
-        # print("formated_path: ", formated_path)
         open(outfilepath, 'w').close()
         with open(outfilepath, 'w') as out:
             for node in formated_path:
