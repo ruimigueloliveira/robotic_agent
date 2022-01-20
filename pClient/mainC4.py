@@ -51,7 +51,6 @@ class MyRob(CRobLinkAngs):
     sensors_correction = False
     end = False
     exploring = True
-    path_calculated = True
 
     def __init__(self, rob_name, rob_id, angles, host):
         CRobLinkAngs.__init__(self, rob_name, rob_id, angles, host)
@@ -130,21 +129,43 @@ class MyRob(CRobLinkAngs):
     # Main function       
     def main(self):
 
-        if self.end == False and self.path_calculated == True:
+        try:
+            # print("collision: ", self.measures.collision)
+            # print("self.collisions: ", self.measures.collisions)
+            if self.end == False:
 
-            self.checkEnd()
-            self.localization()
+                self.checkEnd()
+                self.localization()
 
-            if self.direcao == "North":
-                self.goingNorth()
-            elif self.direcao == "West":
-                self.goingWest()
-            elif self.direcao == "South":
-                self.goingSouth()
-            elif self.direcao == "East":
-                self.goingEast()
-        else:
+                if self.direcao == "North":
+                    self.goingNorth()
+                elif self.direcao == "West":
+                    self.goingWest()
+                elif self.direcao == "South":
+                    self.goingSouth()
+                elif self.direcao == "East":
+                    self.goingEast()
+            else:
+                self.finish()
+        
+        except IndexError:
+            print("An IndexError exception occurred")
             self.finish()
+            self.end = True
+
+            self.writePathOutputFile()
+            self.writeMazesOutputFiles()
+            
+        except:
+            print("An exception occurred")
+            self.finish()
+            self.end = True
+
+            self.writePathOutputFile()
+            self.writeMazesOutputFiles()
+            
+
+        
     
     # Robot movement when it needs to deviate to its left
     def auxGoLeft(self):
@@ -393,7 +414,6 @@ class MyRob(CRobLinkAngs):
                 for triple in self.beaconCoordinateList:
                     if triple[0] == self.measures.ground:
                         print("beacon: ", triple)
-                      
             
     # Main function when the compass is 0
     def goingNorth(self):
@@ -1308,7 +1328,6 @@ class MyRob(CRobLinkAngs):
             
     # Writing maze output files
     def writePathOutputFile(self):
-        self.path_calculated = False
         all_beacons_permutations = list(itertools.permutations(self.beaconCoordinateList))
 
         minpathlen = 27* 55
@@ -1348,8 +1367,7 @@ class MyRob(CRobLinkAngs):
                 else:
                     out.write(str(node[1]) + ' ' +  str(node[2]))
                     out.write('\n')
-        self.path_calculated = True
-        return self.path_calculated
+        print("path atualizada")
 
 class Map():
     def __init__(self, filename):
