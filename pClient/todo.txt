@@ -1,7 +1,5 @@
 
-testar ficheiros de saida
-alterar sinais e ordem da path
-para o path final fazer todas as combinacoes (utilizar biblioteca)
+
 
 
 relatorio
