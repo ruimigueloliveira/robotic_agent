@@ -48,7 +48,6 @@ class MyRob(CRobLinkAngs):
     beaconNumberList = []
     beaconCoordinateList = []
     finalpath = []
-    sensors_correction = False
     end = False
     exploring = True
 
@@ -324,11 +323,11 @@ class MyRob(CRobLinkAngs):
 
         if self.measures.time >= int(self.simTime):
             print("\nfim do tempo")
-            self.writePathOutputFile()
-            self.writeMazesOutputFiles()
             self.end = True
             self.finish()
-
+            self.writePathOutputFile()
+            self.writeMazesOutputFiles()
+            
     # Find next point based on A* algorithm
     def findNextPoint(self):
 
@@ -437,12 +436,9 @@ class MyRob(CRobLinkAngs):
                 else:
                     self.auxRotateSouth()
     
-        elif (abs(self.xpontoatual - self.xorigemtransformada) < 0.06) or \
-                ((self.measures.irSensor[0] > 1.5) and (self.measures.ground != -1)) or \
-                (self.measures.irSensor[0] > 2.1):
+        elif (abs(self.xpontoatual - self.xorigemtransformada) < 0.06) or (self.measures.irSensor[0] > 2.1):
 
-            if ((self.measures.irSensor[0] > 1.5) and (self.measures.ground != -1)) or \
-                (self.measures.irSensor[0] > 2.1):
+            if self.measures.irSensor[0] > 2.1:
                 self.driveMotorsUpdate(0.0, 0.0)
             
             if self.myCompass < 0+10 and self.myCompass > 0-10:
@@ -513,12 +509,9 @@ class MyRob(CRobLinkAngs):
                 else:
                     self.auxRotateEast()
 
-        elif (abs(self.ypontoatual - self.yorigemtransformada) < 0.06) or \
-                ((self.measures.irSensor[0] > 1.5) and (self.measures.ground != -1)) or \
-                (self.measures.irSensor[0] > 2.1):
+        elif (abs(self.ypontoatual - self.yorigemtransformada) < 0.06) or (self.measures.irSensor[0] > 2.1):
 
-            if ((self.measures.irSensor[0] > 1.5) and (self.measures.ground != -1)) or \
-                (self.measures.irSensor[0] > 2.1):
+            if self.measures.irSensor[0] > 2.1:
                 self.driveMotorsUpdate(0.0, 0.0)
 
             if self.myCompass < 90+10 and self.myCompass > 90-10:
@@ -588,12 +581,9 @@ class MyRob(CRobLinkAngs):
                 else:
                     self.auxRotateNorth()
 
-        elif    (abs(self.xpontoatual - self.xorigemtransformada) < 0.06) or \
-                ((self.measures.irSensor[0] > 1.5) and (self.measures.ground != -1)) or \
-                (self.measures.irSensor[0] > 2.1):
+        elif (abs(self.xpontoatual - self.xorigemtransformada) < 0.06) or (self.measures.irSensor[0] > 2.1):
 
-            if ((self.measures.irSensor[0] > 1.5) and (self.measures.ground != -1)) or \
-                (self.measures.irSensor[0] > 2.1):
+            if self.measures.irSensor[0] > 2.1:
                 self.driveMotorsUpdate(0.0, 0.0)
             
             if (self.myCompass < 180+10 and self.myCompass > 180-10) or (self.myCompass < -180+10 and self.myCompass > -180-10):
@@ -664,12 +654,9 @@ class MyRob(CRobLinkAngs):
                 else:
                     self.auxRotateWest()
 
-        elif (abs(self.ypontoatual - self.yorigemtransformada) < 0.06) or \
-                ((self.measures.irSensor[0] > 1.5) and (self.measures.ground != -1)) or \
-                (self.measures.irSensor[0] > 2.1):
+        elif (abs(self.ypontoatual - self.yorigemtransformada) < 0.06) or (self.measures.irSensor[0] > 2.1):
 
-            if ((self.measures.irSensor[0] > 1.5) and (self.measures.ground != -1)) or \
-                (self.measures.irSensor[0] > 2.1):
+            if self.measures.irSensor[0] > 2.1:
                 self.driveMotorsUpdate(0.0, 0.0)
             
             if self.myCompass < -90+10 and self.myCompass > -90-10:
@@ -1037,19 +1024,12 @@ class MyRob(CRobLinkAngs):
         self.nearestDirectionEstimate()
         self.sensorsCorrection()
 
-        if (self.measures.ground != -1):
-            self.movement_model_x = self.movement_model_x
-            self.movement_model_y = self.movement_model_y
-        else:
-            self.movement_model_x = self.sensors_x
-            self.movement_model_y = self.sensors_y
+        self.movement_model_x = self.sensors_x
+        self.movement_model_y = self.sensors_y
         
         self.myCompass = round(math.degrees(self.movement_model_theta))
         self.xpontoatual = round(self.movement_model_x, 2)
         self.ypontoatual = round(self.movement_model_y, 2)
-
-        if self.sensors_correction == True:
-            self.sensors_correction = False
 
     # Calculation of coordinates and theta from movement model
     def movementModel(self):
@@ -1260,6 +1240,8 @@ class MyRob(CRobLinkAngs):
                 if len(path) < minpathlen:
                     minpathlen = len(path)
                     self.finalpath = path
+
+        print("final path: ", self.finalpath)
         formated_path = []
         for node in self.finalpath:
             beacon_id = -1

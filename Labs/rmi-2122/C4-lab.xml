@@ -12,11 +12,14 @@
 		<Beacon X="25" 	Y="9.0" 	Height="4.0"/>
 		<Target X="25" 	Y="9.0" 	Radius="1.0"/>
 
-		<Beacon X="25" 	Y="11.0" 	Height="4.0"/>
+		<!-- <Beacon X="25" 	Y="11.0" 	Height="4.0"/>
 		<Target X="25" 	Y="11.0" 	Radius="1.0"/>
 
+		<Beacon X="25" 	Y="7.0" 	Height="4.0"/>
+		<Target X="25" 	Y="7.0" 	Radius="1.0"/>
+
 		<Beacon X="7" 	Y="9.0" 	Height="4.0"/>
-		<Target X="7" 	Y="9.0" 	Radius="1.0"/>
+		<Target X="7" 	Y="9.0" 	Radius="1.0"/> -->
 
 
 		<Row  Pos="12" Pattern="           |              |              "  />
